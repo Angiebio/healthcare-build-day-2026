@@ -375,6 +375,7 @@ class ScoutBody(BaseModel):
     nodes: list[dict[str, Any]] = []
     stats: list[dict[str, Any]] = []
     concepts: list[str] = []
+    instant: bool = False   # skip the model and return the deterministic pass
 
 
 @app.post("/scout/brief")
@@ -387,7 +388,13 @@ def scout_brief(body: ScoutBody) -> dict[str, Any]:
     precisely what the model was given.
     """
     payload = scout_mod.build_payload(body.query, body.nodes, body.stats, body.concepts)
-    text, source = scout_mod.model_brief(payload)
+    if body.instant:
+        # Rendered immediately so the panel is never an empty spinner. The
+        # interface then asks again without this flag and swaps the model's
+        # version in when it arrives.
+        text, source = scout_mod.deterministic_brief(payload), "deterministic"
+    else:
+        text, source = scout_mod.model_brief(payload)
     return {
         "brief": text,
         "source": source,

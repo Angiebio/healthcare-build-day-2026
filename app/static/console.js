@@ -995,7 +995,10 @@ function renderSummary(res) {
   if (results.length < SUMMARY_MIN) { host.hidden = true; host.innerHTML = ''; return; }
 
   const perNode = {};
-  results.forEach(function (r) { perNode[r.node] = (perNode[r.node] || 0) + 1; });
+  const nodeOf = function (r) {
+    return r.node || ((r.passport && r.passport.owner && r.passport.owner.node) || '');
+  };
+  results.forEach(function (r) { const k = nodeOf(r); if (k) perNode[k] = (perNode[k] || 0) + 1; });
   const rows = (res.nodes_queried || []).map(function (n) {
     const node = typeof n === 'string' ? n : n.node;
     const sup = typeof n === 'object' && n.k_anon_ok === false;
@@ -1023,8 +1026,9 @@ function renderSummary(res) {
     '<div class="summary">'
     + '<div class="summary-head"><h3>Cohort summary '
     + '<span class="status">' + results.length + ' studies returned</span></h3>'
-    + '<button class="btn btn--sm" id="scout-ask" title="' + SCOUT_COPY.tooltip + '">'
-  + '◈ ' + SCOUT_COPY.idle + '</button>'
+    + '<button class="btn btn--sm btn--scout" id="scout-ask" title="' + SCOUT_COPY.tooltip + '">'
+  + '<img src="/contrib/pooja/assets/brand/scout-small.png" alt="" class="scout-icon">'
+  + SCOUT_COPY.idle + '</button>'
 + '<button class="btn btn--petition btn--sm" id="csv-export">Download cohort CSV</button></div>'
 + '<div class="scout" id="scout-panel" hidden></div>'
     + '<div class="summary-grid">'
@@ -1120,64 +1124,87 @@ async function askScout(res, stats, concepts) {
   const host = $('scout-panel');
   if (!host) return;
   host.hidden = false;
-  host.innerHTML = '<div class="scout-body"><p class="scout-status">'
-    + esc(SCOUT_COPY.working) + '<span class="scout-dots"></span></p></div>';
-
-  const slow = setTimeout(function () {
-    const s = host.querySelector('.scout-status');
-    if (s) s.textContent = SCOUT_COPY.slow;
-  }, 6000);
 
   const nodes = (res.nodes_queried || []).map(function (n) {
     return (typeof n === 'string') ? { node: n, k_anon_ok: true, records_returned: 0 } : n;
   });
-  // The interface counts what it actually received per node, so a withheld
-  // hospital contributes nothing rather than a zero that looks like a fact.
   const perNode = {};
-  (res.results || []).forEach(function (r) { perNode[r.node] = (perNode[r.node] || 0) + 1; });
+  (res.results || []).forEach(function (r) {
+    const k = r.node || ((r.passport && r.passport.owner && r.passport.owner.node) || '');
+    if (k) perNode[k] = (perNode[k] || 0) + 1;
+  });
   nodes.forEach(function (n) { if (n.k_anon_ok !== false) n.records_returned = perNode[n.node] || 0; });
 
-  let data;
-  try {
-    const r = await fetch('/scout/brief', {
+  const body = {
+    query: ($('nl') && $('nl').value) || 'the current cohort',
+    nodes: nodes, stats: stats, concepts: concepts,
+  };
+  const post = function (extra) {
+    return fetch('/scout/brief', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: ($('nl') && $('nl').value) || 'the current cohort',
-        nodes: nodes, stats: stats, concepts: concepts,
-      }),
-    });
-    if (!r.ok) throw new Error('scout unavailable');
-    data = await r.json();
+      body: JSON.stringify(Object.assign({}, body, extra)),
+    }).then(function (r) { if (!r.ok) throw new Error('scout'); return r.json(); });
+  };
+
+  const paint = function (data, pending) {
+    const papers = (data.literature || []).map(function (p) {
+      return '<li><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.title)
+        + '</a><span class="scout-cite">' + esc(p.first_author) + ' · ' + esc(p.journal)
+        + ' · ' + esc(p.year) + '</span></li>';
+    }).join('');
+    const deterministic = /deterministic/.test(data.source || '');
+
+    host.innerHTML =
+      '<div class="scout-body">'
+      + '<div class="scout-mark"><img src="/contrib/pooja/assets/brand/scout.png" alt="">'
+      + '<span><strong>Scout</strong><em>a quick look before you commit</em></span></div>'
+      + (pending
+          ? '<div class="scout-progress" role="status" aria-live="polite">'
+            + '<div class="scout-bar"><span></span></div>'
+            + '<span class="scout-progress-label">' + esc(SCOUT_COPY.working) + '</span></div>'
+          : '')
+      + '<p class="scout-brief' + (pending ? ' is-draft' : '') + '">' + esc(data.brief) + '</p>'
+      + '<p class="scout-source">'
+      + (pending
+          ? 'Deterministic summary, shown immediately. The local model is writing its version now.'
+          : (deterministic ? esc(SCOUT_COPY.offline)
+                           : 'Narrated by ' + esc(data.source) + ', running on this machine.'))
+      + '</p>'
+      + (papers
+          ? '<h4>Related published work</h4><ul class="scout-papers">' + papers + '</ul>'
+          : '<p class="scout-source">' + esc(SCOUT_COPY.noPapers) + '</p>')
+      + '<details class="scout-worldview"><summary>' + esc(SCOUT_COPY.worldview) + '</summary>'
+      + '<pre>' + esc(JSON.stringify(data.payload_shown_to_model, null, 2)) + '</pre>'
+      + '<p class="scout-source">No passport, no report text, no study identifier, no age, no sex, '
+      + 'and no withheld hospital’s count. Scout sits downstream of every disclosure '
+      + 'decision and cannot widen one.</p></details>'
+      + '<p class="scout-footer">' + esc(data.disclaimer || SCOUT_COPY.footer) + '</p>'
+      + '</div>';
+  };
+
+  // Two passes. The deterministic one lands in well under a second so the panel
+  // is never an empty spinner; the model's version replaces it in place. The
+  // progress bar is indeterminate on purpose, because we genuinely do not know
+  // how long a small model will take and a fake percentage would be a lie.
+  host.innerHTML = '<div class="scout-body"><div class="scout-progress">'
+    + '<div class="scout-bar"><span></span></div>'
+    + '<span class="scout-progress-label">' + esc(SCOUT_COPY.working) + '</span></div></div>';
+
+  let instant = null;
+  try {
+    instant = await post({ instant: true });
+    paint(instant, true);
+  } catch (e) { /* fall through to the model attempt */ }
+
+  try {
+    const full = await post({});
+    paint(full, false);
   } catch (e) {
-    clearTimeout(slow);
-    host.innerHTML = '<div class="scout-body"><p class="scout-status">'
-      + esc(SCOUT_COPY.offline) + '</p></div>';
-    return;
+    if (instant) { paint(instant, false); }
+    else {
+      host.innerHTML = '<div class="scout-body"><p class="scout-source">'
+        + esc(SCOUT_COPY.offline) + '</p></div>';
+    }
   }
-  clearTimeout(slow);
-
-  const papers = (data.literature || []).map(function (p) {
-    return '<li><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.title)
-      + '</a><span class="scout-cite">' + esc(p.first_author) + ' · ' + esc(p.journal)
-      + ' · ' + esc(p.year) + '</span></li>';
-  }).join('');
-
-  const deterministic = /deterministic/.test(data.source || '');
-
-  host.innerHTML =
-    '<div class="scout-body">'
-    + '<p class="scout-brief">' + esc(data.brief) + '</p>'
-    + '<p class="scout-source">' + (deterministic ? esc(SCOUT_COPY.offline)
-        : 'Narrated by ' + esc(data.source) + ', running on this machine.') + '</p>'
-    + (papers
-        ? '<h4>Related published work</h4><ul class="scout-papers">' + papers + '</ul>'
-        : '<p class="scout-source">' + esc(SCOUT_COPY.noPapers) + '</p>')
-    + '<details class="scout-worldview"><summary>' + esc(SCOUT_COPY.worldview) + '</summary>'
-    + '<pre>' + esc(JSON.stringify(data.payload_shown_to_model, null, 2)) + '</pre>'
-    + '<p class="scout-source">No passport, no report text, no study identifier, no age, no sex, '
-    + 'and no withheld hospital’s count. Scout sits downstream of every disclosure '
-    + 'decision and cannot widen one.</p></details>'
-    + '<p class="scout-footer">' + esc(data.disclaimer || SCOUT_COPY.footer) + '</p>'
-    + '</div>';
 }

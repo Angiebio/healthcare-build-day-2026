@@ -439,3 +439,43 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.76rem; font-style: italic; color: var(--ink-faint); }
 #scout-ask { border-color: var(--navy); color: var(--navy); font-weight: 600; }
 #scout-ask:hover { background: var(--navy); color: #fff; }
+
+/* Scout identity + progress. The bar is indeterminate on purpose: we do not
+   know how long a small model will take, and a fake percentage would be a lie
+   in a product whose whole argument is that it does not overstate. */
+.btn--scout { display: inline-flex; align-items: center; gap: 0.4rem; }
+.scout-icon { height: 1.35rem; width: auto; display: block; }
+.scout-mark { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.85rem; }
+.scout-mark img { height: 2.6rem; width: auto; display: block; }
+.scout-mark span { display: flex; flex-direction: column; line-height: 1.25; }
+.scout-mark strong { font-size: 0.98rem; color: var(--navy); }
+.scout-mark em { font-size: 0.76rem; color: var(--ink-faint); font-style: italic; }
+
+.scout-progress { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.8rem; }
+.scout-bar { flex: 1; height: 4px; background: var(--surface-alt); border: 1px solid var(--rule); overflow: hidden; }
+.scout-bar span {
+  display: block; height: 100%; width: 34%;
+  background: linear-gradient(90deg, var(--navy), #f7921e);
+  animation: scout-slide 1.35s ease-in-out infinite;
+}
+@keyframes scout-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.scout-progress-label { font-family: var(--font-data); font-size: 0.76rem; color: var(--ink-faint); white-space: nowrap; }
+.scout-brief.is-draft { color: var(--ink-soft); }
+@media (prefers-reduced-motion: reduce) { .scout-bar span { animation: none; width: 100%; opacity: .5; } }
+
+/* Both summary actions share one height and baseline. The Scout button is a
+   light field so the navy wordmark and the navy in the icon stay readable;
+   navy on navy was losing both. */
+.summary-head .btn { min-height: 2.5rem; padding: 0.55rem 1.1rem; display: inline-flex;
+                     align-items: center; justify-content: center; gap: 0.45rem; line-height: 1; }
+.btn--scout {
+  background: #dbe5fa;
+  border: 1px solid #9db4e8;
+  color: var(--navy);
+  font-weight: 700;
+}
+.btn--scout:hover { background: #c9d8f7; border-color: var(--brand-blue); color: var(--navy); }
+.btn--scout .scout-icon { height: 1.5rem; }
