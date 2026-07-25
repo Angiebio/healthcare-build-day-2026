@@ -368,7 +368,27 @@ footer {
 /* --- nav dropdown: the audience pages live under one menu so the masthead
    stays calm. Hover on pointer devices, click-to-open via :focus-within for
    keyboards, because a regulator's browser is often a keyboard. ------------- */
-.nav .menu { position: relative; }
+.nav .menu { position: relative; display: inline-flex; align-items: center; }
+
+/* Hover bridge. The dropdown is offset 0.6rem below the button for looks, and that
+   gap was dead ground: the pointer left the button, was over neither button nor
+   panel, and the menu closed before you could reach it. The panel is a CHILD of
+   .menu, so hovering the panel already keeps it open -- only the crossing was
+   broken. This is a transparent strip spanning the gap, as wide as the panel, that
+   exists only while the menu is open. Nothing visual changes; the menu just stops
+   escaping. (Set --menu-gap and the offset below together if you retune the look.) */
+.nav .menu::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16rem;
+  height: 0.75rem;
+  display: none;
+}
+.nav .menu:hover::after, .nav .menu:focus-within::after { display: block; }
+
 .nav .menu > button {
   font: inherit;
   font-size: 0.88rem;
@@ -429,6 +449,9 @@ figure.diagram figcaption {
 @media (max-width: 640px) {
   .nav .menu ul { position: static; transform: none; opacity: 1; visibility: visible;
                   box-shadow: none; border: 0; padding-left: 0.8rem; min-width: 0; }
+  /* The panel is inline here, so there is no gap to bridge and no hover to react
+     to on a touch screen. Retire the strip rather than leave it floating. */
+  .nav .menu::after { content: none; }
 }
 
 /* --- brand lockup: raster icon left, vector wordmark right. One definition,
