@@ -402,3 +402,19 @@ input:focus, select:focus, textarea:focus {
 .info:hover .tip, .info:focus-visible .tip { opacity: 1; visibility: visible; }
 .count-hint { margin-left: auto; font-family: var(--font-data); font-size: 0.68rem; color: var(--ink-faint); }
 .check { display: flex; align-items: center; gap: 0.45rem; }
+
+/* Cohort summary: aggregates, charts, export. Recessive chrome, the data reads. */
+.summary { border: 1px solid var(--rule); background: var(--surface); padding: 1.1rem 1.25rem 1.25rem; margin: 1rem 0 1.5rem; }
+.summary-head { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.summary-head h3 { margin: 0; font-size: 1rem; color: var(--navy); }
+.summary-head .status { font-weight: 400; margin-left: 0.5rem; }
+.summary-head button { margin-left: auto; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1.5rem; }
+.chart-fig { margin: 0; }
+.chart-fig figcaption { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); margin-bottom: 0.5rem; }
+.chart { width: 100%; height: auto; display: block; }
+.chart .c-lbl { font: 400 11px var(--font-data); fill: var(--ink-soft); }
+.chart .c-val { font: 600 12px var(--font-data); fill: var(--ink); dominant-baseline: middle; }
+.chart .c-sup { fill: #a85e08; font-weight: 700; }
+.summary-stats { margin-top: 1.25rem; }
+@media (max-width: 640px) { .summary-head button { margin-left: 0; } }

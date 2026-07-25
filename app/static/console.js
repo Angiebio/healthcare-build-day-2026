@@ -816,6 +816,7 @@ async function go() {
   try {
     const res = DATA.live ? await fetchSearch() : runSearch();
     render(res);
+    renderSummary(res);
     $('status-line').textContent =
       `${res.results.length} shown · ${res.timing_ms} ms · ` +
       `${DATA.live ? 'live broker' : 'local fixtures'}`;
@@ -881,3 +882,203 @@ boot().catch((err) => {
      <p>${esc(err.message)}</p></div>`);
   throw err;                                    // fail loud, never a blank page
 });
+
+/* ===========================================================================
+   Cohort summary: aggregate figures, charts, and CSV export.
+
+   This is what a computational researcher needs before committing to a cohort:
+   how many, where they are, and how the measured values are distributed.
+
+   Form choices, deliberately:
+   - Bars, not a pie. A pie cannot honestly draw a suppressed hospital ("<10"),
+     and comparing magnitudes across sites is exactly what bars are for.
+   - One hue. Identity comes from the axis labels, so colour carries magnitude
+     only, and a single navy passes contrast comfortably. Orange is reserved for
+     the suppressed marker, which also carries a text label, so state is never
+     colour-alone.
+   - Direct labels on every bar: there are three of them, not three hundred.
+   =========================================================================== */
+
+const SUMMARY_MIN = 5;
+
+function measurementStats(results) {
+  const byQuantity = {};
+  const unitOf = {};
+  for (const r of results) {
+    for (const m of (r.passport.measurements || [])) {
+      (byQuantity[m.quantity] = byQuantity[m.quantity] || []).push(m.value);
+      unitOf[m.quantity] = m.unit || '';
+    }
+  }
+  return Object.entries(byQuantity).map(function (entry) {
+    const quantity = entry[0];
+    const s = entry[1].slice().sort(function (a, b) { return a - b; });
+    const mean = s.reduce(function (a, b) { return a + b; }, 0) / s.length;
+    const mid = Math.floor(s.length / 2);
+    return {
+      quantity: quantity,
+      n: s.length,
+      min: s[0],
+      max: s[s.length - 1],
+      mean: Number(mean.toFixed(2)),
+      median: s.length % 2 ? s[mid] : Number(((s[mid - 1] + s[mid]) / 2).toFixed(2)),
+      unit: unitOf[quantity],
+    };
+  }).sort(function (a, b) { return b.n - a.n; });
+}
+
+function barChart(rows, alt) {
+  const W = 520, rowH = 30, padL = 108, padR = 96, top = 8;
+  const H = top + rows.length * rowH + 6;
+  let max = 1;
+  rows.forEach(function (r) { if (r.value > max) max = r.value; });
+
+  const bars = rows.map(function (r, i) {
+    const y = top + i * rowH;
+    const w = r.suppressed
+      ? 26
+      : Math.max(2, Math.round((r.value / max) * (W - padL - padR)));
+    const fill = r.suppressed ? 'url(#hatch)' : 'var(--navy)';
+    const label = r.suppressed ? '<10 withheld' : String(r.value);
+    const cls = r.suppressed ? 'c-val c-sup' : 'c-val';
+    return '<text x="' + (padL - 10) + '" y="' + (y + 15) + '" text-anchor="end" class="c-lbl">'
+         + esc(r.label) + '</text>'
+         + '<rect x="' + padL + '" y="' + (y + 4) + '" width="' + w + '" height="16" fill="'
+         + fill + '"></rect>'
+         + '<text x="' + (padL + w + 8) + '" y="' + (y + 16) + '" class="' + cls + '">'
+         + esc(label) + '</text>';
+  }).join('');
+
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" class="chart" aria-label="' + esc(alt) + '">'
+    + '<defs><pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" '
+    + 'patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="transparent"></rect>'
+    + '<line x1="0" y1="0" x2="0" y2="6" stroke="#a85e08" stroke-width="2.5"></line></pattern></defs>'
+    + bars + '</svg>';
+}
+
+function histogram(values, unit) {
+  if (values.length < SUMMARY_MIN) return '';
+  const W = 520, H = 136, padL = 34, padB = 28, bins = 10;
+  let min = Math.min.apply(null, values), max = Math.max.apply(null, values);
+  const span = (max - min) || 1;
+  const counts = new Array(bins).fill(0);
+  values.forEach(function (v) {
+    counts[Math.min(bins - 1, Math.floor(((v - min) / span) * bins))] += 1;
+  });
+  let peak = 1;
+  counts.forEach(function (c) { if (c > peak) peak = c; });
+  const bw = (W - padL - 12) / bins;
+
+  const bars = counts.map(function (c, i) {
+    const h = Math.round((c / peak) * (H - padB - 16));
+    const lo = (min + (span / bins) * i).toFixed(1);
+    const hi = (min + (span / bins) * (i + 1)).toFixed(1);
+    return '<rect x="' + (padL + i * bw + 1) + '" y="' + (H - padB - h) + '" width="' + (bw - 3)
+      + '" height="' + h + '" fill="var(--navy)"><title>' + c + ' studies, ' + lo + ' to ' + hi
+      + ' ' + esc(unit) + '</title></rect>';
+  }).join('');
+
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" class="chart" aria-label="'
+    + 'Distribution of measured values from ' + min + ' to ' + max + ' ' + esc(unit) + '">'
+    + bars
+    + '<line x1="' + padL + '" y1="' + (H - padB) + '" x2="' + (W - 12) + '" y2="' + (H - padB)
+    + '" stroke="var(--rule)"></line>'
+    + '<text x="' + padL + '" y="' + (H - 8) + '" class="c-lbl">' + min + ' ' + esc(unit) + '</text>'
+    + '<text x="' + (W - 12) + '" y="' + (H - 8) + '" text-anchor="end" class="c-lbl">'
+    + max + ' ' + esc(unit) + '</text></svg>';
+}
+
+function renderSummary(res) {
+  const host = $('cohort-summary');
+  if (!host) return;
+  const results = res.results || [];
+  if (results.length < SUMMARY_MIN) { host.hidden = true; host.innerHTML = ''; return; }
+
+  const perNode = {};
+  results.forEach(function (r) { perNode[r.node] = (perNode[r.node] || 0) + 1; });
+  const rows = (res.nodes_queried || []).map(function (n) {
+    const node = typeof n === 'string' ? n : n.node;
+    const sup = typeof n === 'object' && n.k_anon_ok === false;
+    return { label: node, value: perNode[node] || 0, suppressed: sup };
+  });
+
+  const stats = measurementStats(results);
+  const lead = stats[0];
+  let leadVals = [];
+  if (lead) {
+    results.forEach(function (r) {
+      (r.passport.measurements || []).forEach(function (m) {
+        if (m.quantity === lead.quantity) leadVals.push(m.value);
+      });
+    });
+  }
+
+  const statRows = stats.map(function (s) {
+    return '<tr><td>' + esc(LABELS[s.quantity] || s.quantity) + '</td><td>' + s.n + '</td>'
+      + '<td>' + s.mean + ' ' + esc(s.unit) + '</td><td>' + s.median + ' ' + esc(s.unit) + '</td>'
+      + '<td>' + s.min + ' ' + esc(s.unit) + '</td><td>' + s.max + ' ' + esc(s.unit) + '</td></tr>';
+  }).join('');
+
+  host.innerHTML =
+    '<div class="summary">'
+    + '<div class="summary-head"><h3>Cohort summary '
+    + '<span class="status">' + results.length + ' studies returned</span></h3>'
+    + '<button class="btn btn--petition btn--sm" id="csv-export">Download cohort CSV</button></div>'
+    + '<div class="summary-grid">'
+    + '<figure class="chart-fig"><figcaption>Studies by hospital</figcaption>'
+    + barChart(rows, 'Number of matching studies at each hospital')
+    + '<p class="status">A hatched bar is a hospital withholding records under the disclosure '
+    + 'threshold. The band is shown, never the exact number.</p></figure>'
+    + (lead
+        ? '<figure class="chart-fig"><figcaption>'
+          + esc(LABELS[lead.quantity] || lead.quantity) + ' distribution</figcaption>'
+          + histogram(leadVals, lead.unit)
+          + '<p class="status">Compiled from report prose inside the hospital boundary. '
+          + leadVals.length + ' measurements across the returned studies.</p></figure>'
+        : '')
+    + '</div>'
+    + (stats.length
+        ? '<table class="data-table summary-stats"><thead><tr><th>Measured quantity</th><th>n</th>'
+          + '<th>Mean</th><th>Median</th><th>Min</th><th>Max</th></tr></thead><tbody>'
+          + statRows + '</tbody></table>'
+          + '<p class="status">Aggregates cover only the studies released under disclosure policy. '
+          + 'Withheld records are excluded and cannot be inferred from these figures.</p>'
+        : '')
+    + '</div>';
+
+  host.hidden = false;
+  const btn = $('csv-export');
+  if (btn) btn.onclick = function () { exportCsv(results); };
+}
+
+function exportCsv(results) {
+  // One row per measurement, flat, so it loads straight into pandas or R.
+  const cols = ['passport_id', 'node', 'modality', 'body_part', 'population_basis',
+                'age_band', 'gestational_age_weeks', 'sex', 'quantity', 'value', 'unit',
+                'laterality', 'confidence', 'provenance', 'release_layer'];
+  const cell = function (v) {
+    const s = (v === null || v === undefined) ? '' : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const lines = [cols.join(',')];
+  results.forEach(function (r) {
+    const p = r.passport, pop = p.population || {}, im = p.imaging || {};
+    const base = [p.passport_id, r.node, im.modality, im.body_part_raw, pop.basis,
+                  pop.public_age_band, pop.gestational_age_weeks, pop.sex];
+    const ms = p.measurements || [];
+    if (!ms.length) {
+      lines.push(base.concat(['', '', '', '', '', '', p.layer || '']).map(cell).join(','));
+    }
+    ms.forEach(function (m) {
+      lines.push(base.concat([m.quantity, m.value, m.unit, m.laterality, m.confidence,
+                              m.provenance, p.layer || '']).map(cell).join(','));
+    });
+  });
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'lantern-cohort.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
