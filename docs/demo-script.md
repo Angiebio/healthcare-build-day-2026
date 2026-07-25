@@ -86,24 +86,21 @@ what a radiologist will notice.)*
 > both true and stronger, and it survives the follow-up question. Overclaiming here is the
 > single easiest way to be caught by someone who then opens a passport and reads one.
 
-## 1:15–1:38 · Beat 3 — privacy holding under pressure ★
+## 1:15–1:38 · Beat 3 — privacy holding under pressure ★  **[narrator: Pooja, QARA]**
 
 > **[click "3 severe > 15 mm"]**
 >
 > "Now narrow to severe — over fifteen millimetres.
 >
-> **Every hospital goes dark.** Each one holds fewer than ten matching studies, and below
-> that threshold no hospital will disclose its own count. You get a band, not a number —
-> and the exact count isn't hidden in the interface, it is **absent from the response**.
->
-> Note *where* that decision was made. Sixteen studies exist across the network, which
-> would clear the threshold — but no single hospital may expose its own small cohort. The
-> hospital is the disclosure boundary. That's what makes this federation and not a
-> warehouse with a login."
+> **Every hospital goes dark.** Below ten, the policy engine won't release a count — the
+> rule is fail-closed, it fires the same way every time, no exceptions. You get a band,
+> never a number. That's the disclosure boundary — the hospital's, not a central system's.
+> That's federation, not a warehouse with a login."
 
-*(23s. Verified: 7 / 6 / 3, all suppressing. This is the criterion-3 beat — the one that
-makes a privacy officer relax. Pooja: is "no hospital will disclose its own count" the
-right register, or too casual?)*
+*(23s. Verified: 7 / 6 / 3, all suppressing. Criterion-3 beat, **delivered by Pooja (QARA)** —
+privacy language signed off by her (`demo-answers-pooja.md`): the true claim (k-anon, threshold=10,
+config-surfaced, fail-closed) is stronger than "won't disclose." The fuller Q&A version of this line
+lives in the answers doc, for the live pitch when there's time.)*
 
 ## 1:38–1:52 · Beat 4 — governed access
 
@@ -151,13 +148,12 @@ Never:
 - Win+Alt+R to capture. **Do one silent dry run** — the click path is the risky part, not the words.
 - If we run long, the cut is the second half of 0:00–0:18. Never cut beat 3.
 
-## Open questions for Angie + Pooja *(answer before 1:00 if you can)*
+## ✅ Open questions — RESOLVED by Pooja (QARA), 12:49 · full record: `demo-answers-pooja.md`
 
-1. **Opening register** — does 0:00–0:18 sound like a clinician's problem or an engineer's?
-   It's the only bit of the script that has to earn emotional credit.
-2. **Pooja — the privacy sentence at 1:15.** "No hospital will disclose its own count."
-   Accurate? Too casual? What would your privacy office actually say?
-3. **Who narrates?** Written in Angie's voice. If Pooja takes beat 3, criterion 3 gets
-   delivered by an actual QARA authority — which is worth real points.
-4. **Anything the champion says in office hours** that contradicts a line here — that
-   outranks the script. Bring it back and I'll recut.
+1. **Opening register** — **KEEP AS-IS.** Reads as the family's/clinician's problem, not an
+   engineer's; earns the emotional credit before beat 1a turns technical.
+2. **Privacy sentence at 1:15** — **CHANGED** to the fail-closed / k-anon / config-surfaced framing
+   (above). The true claim is more defensible and more auditable than "no hospital will disclose."
+3. **Narrator** — **Pooja delivers beat 3.** Criterion 3 from an actual QARA authority in the room.
+4. **Champion contradictions** — **none yet.** Pooja flags immediately after office hours; the
+   champion outranks the script.
