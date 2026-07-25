@@ -1,0 +1,216 @@
+{
+  "cached_at": "2026-07-25",
+  "source": "PubMed E-utilities (NCBI)",
+  "concepts": {
+    "fetal ventriculomegaly": [
+      {
+        "pmid": "29705191",
+        "title": "Mild fetal ventriculomegaly: diagnosis, evaluation, and management",
+        "first_author": "Society for Maternal-Fetal Medicine (SMFM);. Electronic address: pubs@smfm.org",
+        "journal": "Am J Obstet Gynecol",
+        "year": "2018",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/29705191/"
+      },
+      {
+        "pmid": "36005554",
+        "title": "Diagnostic approach to fetal ventriculomegaly",
+        "first_author": "D'Addario V",
+        "journal": "J Perinat Med",
+        "year": "2023",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/36005554/"
+      },
+      {
+        "pmid": "33252761",
+        "title": "Imaging of fetal ventriculomegaly",
+        "first_author": "Mirsky DM",
+        "journal": "Pediatr Radiol",
+        "year": "2020",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/33252761/"
+      },
+      {
+        "pmid": "35102980",
+        "title": "Fetal Ventriculomegaly and Hydrocephalus - What Shouldn't be Missed on Imaging?",
+        "first_author": "Sira LB",
+        "journal": "Neurol India",
+        "year": "2021",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/35102980/"
+      },
+      {
+        "pmid": "28510072",
+        "title": "Fetal ventriculomegaly: Diagnosis, treatment, and future directions",
+        "first_author": "Pisapia JM",
+        "journal": "Childs Nerv Syst",
+        "year": "2017",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/28510072/"
+      }
+    ],
+    "ejection fraction": [
+      {
+        "pmid": "39566869",
+        "title": "Tirzepatide Reduces LV Mass and Paracardiac Adipose Tissue in Obesity-Related Heart\u00a0Failure: SUMMIT CMR Substudy",
+        "first_author": "Kramer CM",
+        "journal": "J Am Coll Cardiol",
+        "year": "2025",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/39566869/"
+      },
+      {
+        "pmid": "37477405",
+        "title": "Editorial for \"Remodeling in Aortic Stenosis With Reduced and Preserved Ejection Fraction: Insight on Motion Abnormality Via 3D+Time Personalized LV Modelling in Cardiac MRI\"",
+        "first_author": "Guo Y",
+        "journal": "J Magn Reson Imaging",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/37477405/"
+      },
+      {
+        "pmid": "40357678",
+        "title": "Towards Phenotyping Characteristics and Mechanism of Conduction Delay in Patients With Nonischemic Heart Failure With Reduced Ejection Fraction: Insights From Cardiac Magnetic Resonance Imaging",
+        "first_author": "Zhou D",
+        "journal": "J Am Heart Assoc",
+        "year": "2025",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/40357678/"
+      },
+      {
+        "pmid": "40335668",
+        "title": "Cardiac and liver impairment on multiorgan MRI and risk of major adverse cardiovascular and liver events",
+        "first_author": "Jackson E",
+        "journal": "Nat Med",
+        "year": "2025",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/40335668/"
+      },
+      {
+        "pmid": "39143936",
+        "title": "Precision prediction of heart failure events in patients with dilated cardiomyopathy and mildly reduced ejection fraction using multi-parametric cardiovascular magnetic resonance",
+        "first_author": "Hammersley DJ",
+        "journal": "Eur J Heart Fail",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/39143936/"
+      }
+    ],
+    "pediatric brain tumor": [
+      {
+        "pmid": "35511271",
+        "title": "Intraoperative MRI versus intraoperative ultrasound in pediatric brain tumor surgery: is expensive better than cheap? A review of the literature",
+        "first_author": "Giussani C",
+        "journal": "Childs Nerv Syst",
+        "year": "2022",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/35511271/"
+      },
+      {
+        "pmid": "29729847",
+        "title": "SIOPE - Brain tumor group consensus guideline on craniospinal target volume delineation for high-precision radiotherapy",
+        "first_author": "Ajithkumar T",
+        "journal": "Radiother Oncol",
+        "year": "2018",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/29729847/"
+      },
+      {
+        "pmid": "32968998",
+        "title": "Intraoperative MRI-guided Resection in Pediatric Brain Tumor Surgery: A Meta-analysis of Extent of Resection and Safety Outcomes",
+        "first_author": "Wach J",
+        "journal": "J Neurol Surg A Cent Eur Neurosurg",
+        "year": "2021",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/32968998/"
+      },
+      {
+        "pmid": "38913187",
+        "title": "Advanced MRI imaging techniques in pediatric brain tumors",
+        "first_author": "Limaye W",
+        "journal": "Pediatr Radiol",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38913187/"
+      },
+      {
+        "pmid": "34975750",
+        "title": "Nuchal Skinfold Thickness in Pediatric Brain Tumor Patients",
+        "first_author": "Peng J",
+        "journal": "Front Endocrinol (Lausanne)",
+        "year": "2021",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/34975750/"
+      }
+    ],
+    "hydrocephalus": [
+      {
+        "pmid": "38755194",
+        "title": "Paediatric hydrocephalus",
+        "first_author": "Kahle KT",
+        "journal": "Nat Rev Dis Primers",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38755194/"
+      },
+      {
+        "pmid": "41231297",
+        "title": "Pediatric hydrocephalus and imaging evaluation of ventriculomegaly in the emergency setting",
+        "first_author": "Elzieny AA",
+        "journal": "Pediatr Radiol",
+        "year": "2026",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/41231297/"
+      },
+      {
+        "pmid": "39085190",
+        "title": "Infant Hydrocephalus",
+        "first_author": "Lu VM",
+        "journal": "Pediatr Rev",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/39085190/"
+      },
+      {
+        "pmid": "31077004",
+        "title": "Neuroimaging\u00a0in Pediatric Hydrocephalus",
+        "first_author": "Krishnan P",
+        "journal": "Indian J Pediatr",
+        "year": "2019",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/31077004/"
+      },
+      {
+        "pmid": "29705191",
+        "title": "Mild fetal ventriculomegaly: diagnosis, evaluation, and management",
+        "first_author": "Society for Maternal-Fetal Medicine (SMFM);. Electronic address: pubs@smfm.org",
+        "journal": "Am J Obstet Gynecol",
+        "year": "2018",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/29705191/"
+      }
+    ],
+    "corpus callosum": [
+      {
+        "pmid": "37794643",
+        "title": "Agenesis of the corpus callosum: What to tell expecting parents?",
+        "first_author": "Tsai P",
+        "journal": "Prenat Diagn",
+        "year": "2023",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/37794643/"
+      },
+      {
+        "pmid": "37816486",
+        "title": "Outcome of partial agenesis of corpus callosum",
+        "first_author": "De Keersmaecker B",
+        "journal": "Am J Obstet Gynecol",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/37816486/"
+      },
+      {
+        "pmid": "35988419",
+        "title": "Outcome of Agenesis of the Corpus Callosum Diagnosed by Fetal MRI",
+        "first_author": "Shwe WH",
+        "journal": "Pediatr Neurol",
+        "year": "2022",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/35988419/"
+      },
+      {
+        "pmid": "33168219",
+        "title": "Agenesis of the Corpus Callosum",
+        "first_author": "Society for Maternal-Fetal Medicine (SMFM)",
+        "journal": "Am J Obstet Gynecol",
+        "year": "2020",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/33168219/"
+      },
+      {
+        "pmid": "39080034",
+        "title": "Fetal agenesis of corpus callosum: chromosomal copy number abnormalities and postnatal follow-up",
+        "first_author": "Cai M",
+        "journal": "Mol Biol Rep",
+        "year": "2024",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/39080034/"
+      }
+    ]
+  }
+}
