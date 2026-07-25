@@ -999,10 +999,28 @@ function renderSummary(res) {
     return r.node || ((r.passport && r.passport.owner && r.passport.owner.node) || '');
   };
   results.forEach(function (r) { const k = nodeOf(r); if (k) perNode[k] = (perNode[k] || 0) + 1; });
+  // Prefer the authoritative per-hospital cohort size the broker reported, and
+  // fall back to counting the page. Counting only what came back made the chart
+  // disagree with the tiles directly above it whenever results were paginated,
+  // and a chart contradicting the number beside it is worse than no chart.
+  // The authoritative per-hospital cohort size lives in disclosure.per_node,
+  // which is the same source the tiles above use. Counting only the returned
+  // page made the chart disagree with the number beside it whenever results
+  // were paginated, and a chart contradicting its own tiles is worse than none.
+  const authoritative = {};
+  ((res.disclosure || {}).per_node || []).forEach(function (n) {
+    if (!n || !n.node) return;
+    const raw = n.approximate_count;
+    const num = (typeof raw === 'number') ? raw : parseInt(raw, 10);
+    authoritative[n.node] = { value: isNaN(num) ? null : num, suppressed: n.k_anon_ok === false };
+  });
+
   const rows = (res.nodes_queried || []).map(function (n) {
     const node = typeof n === 'string' ? n : n.node;
-    const sup = typeof n === 'object' && n.k_anon_ok === false;
-    return { label: node, value: perNode[node] || 0, suppressed: sup };
+    const a = authoritative[node];
+    const sup = a ? a.suppressed : (typeof n === 'object' && n.k_anon_ok === false);
+    const value = (a && a.value !== null && !sup) ? a.value : (perNode[node] || 0);
+    return { label: node, value: value, suppressed: sup };
   });
 
   const stats = measurementStats(results);
