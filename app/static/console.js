@@ -115,20 +115,27 @@ function readFilters() {
     access: { min_layer: 'L1' },
   };
 
-  const stage = $('stage').value;
-  if (stage) f.population.stages = [stage];
+  // The broker refuses a fetal query that doesn't declare its population basis,
+  // because PatientAge on a fetal record is the MOTHER's age. Declaring it is not
+  // ceremony -- it is the client stating which clock it means, so a 20-year-old
+  // mother can never be read as a 20-year-old patient.
+  const gestational = f.imaging.body_site.includes('FETAL');
+  if (gestational) f.population.basis = 'gestational';
 
-  // The broker's QueryAST refuses a fetal query that doesn't declare its population
-  // basis, because PatientAge on a fetal record is the MOTHER's age. Declaring it is
-  // not ceremony -- it is the client stating which clock it means, so a 20-year-old
-  // mother can never be read as a 20-year-old patient. Same reason the passport
-  // carries `basis`.
-  if (f.imaging.body_site.includes('FETAL')) f.population.basis = 'gestational';
+  // ...and the two clocks are mutually exclusive by validator: a gestational
+  // population may not also carry chronological stages or age bounds. Sending both
+  // is a 422, so the stage control only applies when we're on the chronological clock.
+  const stage = $('stage').value;
+  if (stage && !gestational) f.population.stages = [stage];
 
   const gmin = parseFloat($('gest-min').value);
   const gmax = parseFloat($('gest-max').value);
-  if (!Number.isNaN(gmin)) f.population.gestational_min_weeks = gmin;
-  if (!Number.isNaN(gmax)) f.population.gestational_max_weeks = gmax;
+  if (!Number.isNaN(gmin)) f.population.gestational_age_min_weeks = gmin;
+  if (!Number.isNaN(gmax)) f.population.gestational_age_max_weeks = gmax;
+  // Gestational bounds are only legal on the gestational clock.
+  if ((!Number.isNaN(gmin) || !Number.isNaN(gmax)) && !gestational) {
+    f.population.basis = 'gestational';
+  }
 
   const q = $('q-quantity').value;
   const v = parseFloat($('q-value').value);
@@ -233,6 +240,82 @@ function matchPassport(p, f, expanded) {
       reason_text: why.map((w) => w.text).join(' · '),
       measurements_matched: matched,
     },
+  };
+}
+
+/* ------------------------------------------------------------ live broker */
+/* The architectural bet, cashed in: the broker speaks a slightly different dialect
+   of the same contract (nodes_queried is a name list, per-node disclosure lives
+   under disclosure.per_node, matched measurements hang off `why`). Normalising it
+   HERE means not one renderer below had to change when the backend landed. */
+async function fetchSearch() {
+  const t0 = performance.now();
+  const f = readFilters();
+  const r = await fetch(`${BROKER}/search`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ filters: f, role: $('role').value, page_size: 200 }),
+  });
+
+  if (!r.ok) {
+    // A 422 is the QueryAST validator refusing a malformed query. That is the
+    // security boundary doing its job, so show what it said rather than a blank page.
+    let detail = `broker returned ${r.status}`;
+    try { detail = (await r.json()).detail || detail; } catch (_) { /* non-JSON body */ }
+    throw new Error(detail);
+  }
+
+  const j = await r.json();
+  const per = j.disclosure?.per_node || [];
+  const meta = Object.fromEntries((DATA.nodes || []).map((n) => [n.node, n]));
+
+  const nodes_queried = per.map((p) => ({
+    node: p.node,
+    label: meta[p.node]?.label || p.node,
+    policy: meta[p.node]?.policy,
+    k_anon_ok: p.k_anon_ok,
+    threshold: j.disclosure.threshold,
+    records_withheld: !p.k_anon_ok,
+    petition_route: j.disclosure.petition_route,
+    // Mirror the server's discipline: an exact count only exists above k.
+    ...(p.k_anon_ok ? { count: p.records_returned } : { approximate_count: p.approximate_count }),
+  }));
+
+  const results = (j.results || []).map((row) => ({
+    passport: row.passport,
+    measurements_matched: row.why?.measurements_matched || [],
+    why: {
+      signals_fired: row.why?.signals_fired || [],
+      reason_text: row.why?.reason_text || '',
+      measurements_matched: row.why?.measurements_matched || [],
+    },
+  }));
+
+  const totalStudies = (DATA.nodes || []).reduce((a, n) => a + (n.studies || 0), 0);
+  const disclosed = nodes_queried.filter((n) => n.k_anon_ok)
+    .reduce((a, n) => a + n.count, 0);
+  const suppressedNodes = nodes_queried.filter((n) => !n.k_anon_ok).length;
+
+  return {
+    query_ast: j.query_ast || f,
+    ontology_expansion: j.ontology_expansion || null,
+    guard: j.guard || null,
+    results,
+    nodes_queried,
+    disclosure: j.disclosure,
+    funnel: [
+      { label: 'Studies in the network', n: totalStudies },
+      { label: 'Matching this query', n: disclosed || j.disclosure.returned_count || 0 },
+      { label: 'Released under disclosure policy', n: j.disclosure.returned_count || 0 },
+      {
+        label: suppressedNodes
+          ? `Withheld — ${suppressedNodes} hospital(s) below k=${j.disclosure.threshold}`
+          : 'Withheld by policy',
+        n: suppressedNodes ? '—' : 0,
+        warn: true,
+      },
+    ],
+    timing_ms: j.timing_ms ?? Math.round(performance.now() - t0),
   };
 }
 
@@ -392,13 +475,29 @@ function render(res) {
     </div>` : '';
   if ($('pet-open')) $('pet-open').onclick = () => openPetition();
 
-  $('funnel').innerHTML = res.funnel.map((f) => `
+  // The differencing guard. When it fires this is the whole privacy thesis in one
+  // box, so it renders above everything -- including above the results it degraded.
+  const g = res.guard;
+  $('guard').innerHTML = (g && g.risk && g.risk !== 'none') ? `
+    <div class="disclosure">
+      <h3>Correlated-query defence engaged — ${esc(g.risk.replace(/_/g, ' '))}</h3>
+      <p>${esc(g.reason)}</p>
+      <p class="meta">action: <strong>${esc(g.action)}</strong>${
+        g.related_query_fingerprint
+          ? ` · related query ${esc(String(g.related_query_fingerprint).slice(0, 16))}` : ''}</p>
+    </div>` : '';
+
+  const base = Number(res.funnel[0]?.n) || 1;
+  $('funnel').innerHTML = res.funnel.map((f) => {
+    const num = Number(f.n);
+    const pct = Number.isFinite(num) ? Math.min(100, (100 * num) / base) : 0;
+    return `
     <div class="funnel-row">
       <span style="${f.warn && f.n ? 'color:var(--stop)' : ''}">${esc(f.label)}</span>
-      <span class="mval">${f.n}</span>
-      <span class="bar" style="width:${Math.min(100,
-        100 * f.n / Math.max(1, res.funnel[0].n))}%"></span>
-    </div>`).join('');
+      <span class="mval">${esc(f.n)}</span>
+      <span class="bar" style="width:${pct}%"></span>
+    </div>`;
+  }).join('');
 
   const rows = res.results.slice(0, 200);
   $('rows').innerHTML = rows.map((r, i) => {
@@ -617,11 +716,34 @@ function syncUnit() {
 }
 
 /* ------------------------------------------------------------------- wire */
+/* One entry point for every search, live or local. Errors surface in the results
+   pane instead of the console log -- on stage nobody is looking at devtools. */
+async function go() {
+  $('status-line').textContent = 'searching…';
+  try {
+    const res = DATA.live ? await fetchSearch() : runSearch();
+    render(res);
+    $('status-line').textContent =
+      `${res.results.length} shown · ${res.timing_ms} ms · ` +
+      `${DATA.live ? 'live broker' : 'local fixtures'}`;
+  } catch (err) {
+    $('guard').innerHTML = `
+      <div class="disclosure">
+        <h3>Query refused</h3>
+        <p>${esc(err.message)}</p>
+        <p class="meta">The query validator rejected this request. Nothing was
+           released — that is the boundary working, not a crash.</p>
+      </div>`;
+    $('rows').innerHTML = '';
+    $('status-line').textContent = 'refused';
+  }
+}
+
 function wire() {
-  $('run').onclick = () => render(runSearch());
-  $('reset').onclick = () => { reset(); render(runSearch()); };
+  $('run').onclick = go;
+  $('reset').onclick = () => { reset(); go(); };
   $('q-quantity').onchange = syncUnit;
-  $('nl').onkeydown = (e) => { if (e.key === 'Enter') render(runSearch()); };
+  $('nl').onkeydown = (e) => { if (e.key === 'Enter') go(); };
   $('p-close').onclick = closeAll;
   $('scrim').onclick = closeAll;
   $('pet-cancel').onclick = closeAll;
@@ -629,11 +751,11 @@ function wire() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 
   document.querySelectorAll('[data-beat]').forEach((b) => {
-    b.onclick = () => { BEATS[b.dataset.beat](); render(runSearch()); };
+    b.onclick = () => { BEATS[b.dataset.beat](); go(); };
   });
 
   BEATS['2']();          // open on the hero query — the demo starts warm
-  render(runSearch());
+  go();
 }
 
 boot().catch((err) => {
