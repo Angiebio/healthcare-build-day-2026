@@ -410,3 +410,37 @@ figure.diagram figcaption {
   .nav .menu ul { position: static; transform: none; opacity: 1; visibility: visible;
                   box-shadow: none; border: 0; padding-left: 0.8rem; min-width: 0; }
 }
+
+/* --- brand lockup: raster icon left, vector wordmark right. One definition,
+   used in the masthead and the footer, so the mark can never drift between
+   surfaces. Sized in em so it scales with whatever context holds it. ------- */
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  text-decoration: none;
+  color: inherit;
+}
+.lockup img.mark {
+  height: 1.9em;
+  width: auto;
+  display: block;
+  flex: none;
+}
+.lockup img.wordmark-svg {
+  height: 1.05em;
+  width: auto;
+  display: block;
+}
+.masthead .lockup { font-size: 1.15rem; }
+footer .lockup { font-size: 0.95rem; margin-bottom: 0.55rem; }
+footer .lockup img.mark { height: 2.1em; }
+
+/* footer becomes a small brand block rather than a line of text */
+footer .footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+@media (max-width: 640px) { .masthead .lockup { font-size: 1rem; } }
