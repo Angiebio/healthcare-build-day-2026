@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" role="img"
+     aria-labelledby="title desc" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="title">Lantern architecture: compilation inside the hospital, discovery outside it</title>
+  <desc id="desc">Each hospital node compiles its own studies into de-identified Study Passports.
+    Only passports cross to the Lantern broker, which federates search, applies disclosure policy,
+    and brokers petitions back to the owning hospital. Raw records never leave the node.</desc>
+
+  <style>
+    .ink   { fill: #16181d; }
+    .soft  { fill: #4a5058; }
+    .faint { fill: #767d87; }
+    .rule  { stroke: #dcdcd6; fill: none; }
+    .boundary { stroke: #4a0873; fill: #ffffff; }
+    .panel { fill: #ffffff; stroke: #dcdcd6; }
+    .accent-fill { fill: #4a0873; }
+    .signal { fill: #5bb545; }
+    .stop { fill: #96271d; }
+    .h    { font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+    .lbl  { font-size: 11.5px; }
+    .tiny { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+    .mono { font-family: ui-monospace, 'SF Mono', Consolas, monospace; font-size: 10.5px; }
+    @media (prefers-color-scheme: dark) {
+      .ink { fill: #e8e8e4; } .soft { fill: #b3b7bd; } .faint { fill: #868c94; }
+      .rule { stroke: #2e333a; } .panel { fill: #1c1f24; stroke: #2e333a; }
+      .boundary { stroke: #c9a5e0; fill: #1c1f24; } .accent-fill { fill: #c9a5e0; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="accent-fill"/>
+    </marker>
+    <marker id="arrowback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#767d87"/>
+    </marker>
+  </defs>
+
+  <!-- ================= TRUST BOUNDARY ================= -->
+  <rect x="16" y="42" width="380" height="404" rx="4" class="boundary" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="30" y="30" class="tiny accent-fill">Hospital node · inside the trust boundary</text>
+  <text x="30" y="64" class="h ink">Raw study record</text>
+  <text x="30" y="82" class="lbl faint">name · MRN · date of birth · institution · full radiology report</text>
+
+  <rect x="30" y="94" width="352" height="30" rx="3" class="panel"/>
+  <text x="42" y="113" class="mono soft">Diagnosis: "…the lateral ventricular atria measuring 14.1 mm…"</text>
+
+  <line x1="206" y1="132" x2="206" y2="150" class="rule" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- compiler -->
+  <rect x="30" y="152" width="352" height="150" rx="4" class="panel" stroke-width="1.5"/>
+  <text x="42" y="172" class="h accent-fill">Privacy–utility compiler</text>
+  <text x="42" y="192" class="lbl ink">1 · Remove direct identifiers</text>
+  <text x="42" y="211" class="lbl ink">2 · Extract measurements from prose</text>
+  <text x="270" y="211" class="tiny signal">★ the move</text>
+  <text x="42" y="230" class="lbl ink">3 · Code findings to standard vocabularies</text>
+  <text x="42" y="249" class="lbl ink">4 · Generalize age; state its basis</text>
+  <text x="42" y="268" class="lbl ink">5 · Stamp provenance and confidence</text>
+  <text x="42" y="290" class="lbl faint">Runs node-side. The broker cannot import it.</text>
+
+  <line x1="206" y1="310" x2="206" y2="330" class="rule" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- passport -->
+  <rect x="30" y="332" width="352" height="98" rx="4" class="panel" stroke-width="1.5"/>
+  <text x="42" y="352" class="h ink">Study Passport</text>
+  <text x="42" y="371" class="mono soft">atrial_width = 14.1 mm · left · conf 0.96</text>
+  <text x="42" y="388" class="mono soft">gestational 24w · MR · fetal · SNOMED brain</text>
+  <text x="42" y="405" class="mono soft">manifest: removed · generalized · pseudonymized</text>
+  <text x="42" y="422" class="lbl faint">No full report. No pixels. Evidence snippet only.</text>
+
+  <!-- ================= CROSSING ================= -->
+  <line x1="398" y1="381" x2="462" y2="381" class="rule" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="404" y="372" class="tiny accent-fill">only this crosses</text>
+
+  <!-- ================= BROKER ================= -->
+  <rect x="470" y="42" width="374" height="230" rx="4" class="panel" stroke-width="1.5"/>
+  <text x="484" y="30" class="tiny faint">Outside the boundary</text>
+  <text x="484" y="66" class="h ink">Lantern broker</text>
+  <text x="484" y="86" class="lbl soft">Federates the three hospital nodes</text>
+
+  <rect x="484" y="98" width="346" height="26" rx="3" class="rule"/>
+  <text x="494" y="115" class="lbl ink">Validated query — proposed input never executes unchecked</text>
+
+  <rect x="484" y="130" width="346" height="26" rx="3" class="rule"/>
+  <text x="494" y="147" class="lbl ink">Rank fusion, with the reason each result matched</text>
+
+  <rect x="484" y="162" width="346" height="26" rx="3" class="rule"/>
+  <text x="494" y="179" class="lbl ink">Disclosure policy — k-anonymity, held per hospital</text>
+
+  <rect x="484" y="194" width="346" height="26" rx="3" class="rule"/>
+  <text x="494" y="211" class="lbl ink">Differencing guard — one query ledger per hospital</text>
+
+  <text x="484" y="243" class="lbl faint">No route, import, or address reaching a raw record.</text>
+  <text x="484" y="260" class="lbl faint">Verified by test, not by assertion.</text>
+
+  <!-- audiences -->
+  <line x1="657" y1="280" x2="657" y2="300" class="rule" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="470" y="302" width="374" height="52" rx="4" class="panel"/>
+  <text x="484" y="322" class="h ink">Researcher · clinician · patient</text>
+  <text x="484" y="340" class="lbl soft">One index, three views. Redaction decided server-side.</text>
+
+  <!-- petition loop back -->
+  <path d="M 657 356 L 657 396 L 430 396" class="rule" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowback)"/>
+  <text x="470" y="414" class="lbl faint">Petition with IRB and purpose routes back to the owning</text>
+  <text x="470" y="430" class="lbl faint">hospital, which decides. Append-only audit. Pixels never served.</text>
+
+  <text x="470" y="452" class="tiny stop">Full source data is architecturally absent — we broker, we do not hold</text>
+</svg>
