@@ -11,23 +11,30 @@
    This is an instrument for clinical researchers and hospital privacy officers.
    It should feel like something a regulator would trust: dense, legible, calm,
    precise. Data density reads as SERIOUS to this audience. Deliberately NOT
-   the default AI-startup look — no purple-to-indigo gradient hero, no big
-   rounded cards floating on pastel, no centered emoji.
+   the default AI-startup look — no gradient hero, no big rounded cards floating
+   on pastel, no centered emoji, and no colour-block callout boxes with a side
+   bar — the product's own accent, used sparingly, does that work instead.
+
+   Palette: white page, grey ink and rules, one warm orange accent used the way
+   a single highlighter mark is used on a printed page — for the wordmark, the
+   one active nav link, and the one button that matters. Everything else stays
+   grey-on-white so the accent still means something when it appears.
 
    Think: a well-typeset scientific instrument panel.
    ============================================================================ */
 
 :root {
-  /* --- color: restrained, high-contrast, one accent used sparingly --------- */
-  --ink:            #16181d;   /* primary text */
-  --ink-soft:       #4a5058;   /* secondary text */
-  --ink-faint:      #767d87;   /* captions, metadata */
-  --paper:          #fbfbf9;   /* page background — warm, not clinical white */
-  --surface:        #ffffff;   /* cards, panels */
-  --rule:           #dcdcd6;   /* hairlines, table borders */
+  /* --- color: white page, restrained grey, one accent used sparingly ------- */
+  --ink:            #1a1a1a;   /* primary text */
+  --ink-soft:       #55585c;   /* secondary text */
+  --ink-faint:      #83878c;   /* captions, metadata */
+  --paper:          #ffffff;   /* page background — white, as requested */
+  --surface:        #f7f7f6;   /* masthead, footer, cards — one step off white */
+  --rule:           #e1e1df;   /* hairlines, table borders */
 
-  --accent:         #4a0873;   /* deep purple — The Real Cat AI. Use sparingly */
-  --accent-soft:    #f0e9f5;
+  --accent:         #c2410c;   /* burnt orange — the one accent color. Use sparingly */
+  --accent-dark:    #9a3412;   /* hover/active state for the accent */
+  --accent-soft:    #fdf1e7;   /* faint orange tint — row hover, never a full box */
   --signal:         #5bb545;   /* leaf green — success/permitted states */
   --caution:        #a8620c;   /* amber — human review required */
   --stop:           #96271d;   /* red — blocked/suppressed */
@@ -46,7 +53,7 @@
   :root {
     --ink: #e8e8e4; --ink-soft: #b3b7bd; --ink-faint: #868c94;
     --paper: #14161a; --surface: #1c1f24; --rule: #2e333a;
-    --accent: #c9a5e0; --accent-soft: #2a1c36;
+    --accent: #ef8642; --accent-dark: #f7a86b; --accent-soft: #2e2016;
   }
 }
 
@@ -73,6 +80,9 @@ body {
   flex-wrap: wrap;
 }
 .masthead .wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: var(--font-prose);
   font-size: 1.35rem;
   font-weight: 600;
@@ -80,6 +90,7 @@ body {
   color: var(--ink);
   text-decoration: none;
 }
+.logo-mark { color: var(--accent); flex-shrink: 0; }
 .masthead .tagline {
   font-size: 0.8rem;
   color: var(--ink-faint);
@@ -133,14 +144,50 @@ main { padding: 2.5rem 1.5rem 5rem; }
 .prose p { margin: 0 0 1rem; }
 .prose a { color: var(--accent); text-underline-offset: 2px; }
 
-/* a pulled-out claim. Use for the one sentence per page that matters most. */
+/* --- hero photograph: one real-feeling image, honestly labeled ------------- */
+.hero-image { margin: 0 0 2.5rem; }
+.hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+}
+.hero-image figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+/* --- "who it serves" icon grid: three small vector illustrations, real
+   HTML text beside each, never baked into the image ------------------------ */
+.who-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin: 1.5rem 0 2rem;
+}
+.who-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+.who-card p { margin: 0; font-size: 0.92rem; }
+
+/* a pulled-out claim. Use for the one sentence per page that matters most.
+   Typographic, not a colour box — a rule above and below, like a pull-quote
+   in a printed journal, not a sidebar. */
 .callout {
-  border-left: 3px solid var(--accent);
-  background: var(--accent-soft);
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 1.1rem 0;
+  margin: 1.75rem 0;
   font-family: var(--font-prose);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--ink-soft);
 }
 
 /* --- data surfaces: shared with the search console ------------------------ */
@@ -216,7 +263,7 @@ button.primary, .btn--primary {
   border-color: var(--accent);
   color: var(--paper);
 }
-button.primary:hover, .btn--primary:hover { background: var(--ink); border-color: var(--ink); }
+button.primary:hover, .btn--primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
 
 footer {
   border-top: 1px solid var(--rule);
@@ -233,4 +280,5 @@ footer {
   .nav { margin-left: 0; flex-wrap: wrap; gap: 1rem; }
   main { padding: 1.5rem 1rem 3rem; }
   .prose h1 { font-size: 1.6rem; }
+  .who-grid { grid-template-columns: 1fr; gap: 1.25rem; }
 }
