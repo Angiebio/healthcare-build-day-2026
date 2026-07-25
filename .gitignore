@@ -1,0 +1,30 @@
+# secrets — never, under any circumstances
+env
+.env
+*.pem
+credentials.json
+*.key
+
+# agent context that stays local (Pooja's copy arrives via the private pooja-mind repo)
+CLAUDE.md
+
+# python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# runtime + data
+*.log
+data/audit.jsonl
+data/cache/
+*.dcm
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,77 @@
+# 🔒 FROZEN API CONTRACT — Lantern
+> **Frozen 25JUL2026 by Flame-Fable. Changes require dispatch sign-off and a shout to the room.**
+> Frontend builds against this immediately and does not wait for the backend to exist.
+> Every endpoint returns JSON. Every list endpoint is explainable. Every denial is legible.
+
+## Upstream (given, do not modify) — the 3 hospital nodes
+`GET http://localhost:{8001|8002|8003}/api/studies` · `/api/studies/{study_id}` · `/health`
+Nodes are dumb, unauthenticated, and leak PII **on purpose**. Ours is the layer that fixes that.
+Node map: `8001=BCH (pediatric)`, `8002=MGH (adult)`, `8003=BWH (adult)`.
+
+## Our API (`app/`, FastAPI, port 8000)
+
+```http
+POST /search
+  body: { text?: str, filters?: {...}, role: "researcher"|"clinician"|"patient", page?, page_size? }
+  → { query_ast, results: [PassportSummary], disclosure: Disclosure, nodes_queried: [...],
+      timing_ms, total_before_suppression }
+  Each result carries `why`: {signals_fired, reason_text, measurements_matched}
+
+GET  /passport/{node}/{study_id}
+  → full Tier-appropriate Passport (see §Passport). Never prose. Never pixels.
+     Includes `deid_manifest` (what was stripped) + per-field `provenance`.
+
+GET  /cohort
+  params: same filters as /search
+  → { count | approximate_count, k_anon_ok, threshold, petition_route }
+
+POST /petition
+  body: { requester_name, institution, irb_number, purpose, cohort_filter, tier_requested }
+  → { petition_id, status: "routed_to_owner", owner_node, owner_contact, audit_id, timestamp }
+  Side effect: append-only audit write. This is the ONLY path toward source data.
+
+PATCH /petition/{id}    body: { decision: "approve"|"deny", reviewer, note }   (owner view)
+GET  /petitions         (owner view — pending queue)
+GET  /audit             append-only trail, newest first. Never mutable.
+GET  /nodes             node health + study counts + policy summary (demo credibility)
+```
+
+### Passport (the artifact — L1 researcher view)
+```json
+{"passport_id":"bch:BR-1543","owner":{"node":"BCH","request_route":"/petition"},
+ "imaging":{"modality":"MR","body_site":{"system":"SCT","code":"12738006","display":"Brain"},
+            "body_part_raw":"BRAIN"},
+ "population":{"pediatric_stage":"neonate","public_age_band":"0-1","sex":"M"},
+ "measurements":[{"quantity":"lateral_ventricular_atrial_width","value":12.4,"unit":"mm",
+                  "laterality":"left","confidence":0.9,"provenance":"report_extraction",
+                  "snippet":"...atrial width of 12.4 mm..."}],
+ "concepts":[{"system":"SCT","code":"...","display":"Cerebral infarction",
+              "provenance":"report_extraction","confidence":0.86}],
+ "temporal":{"study_interval_days":null,"date_shifted":true},
+ "privacy":{"highest_release_layer":"L1","patient_identity_removed":true,
+            "release_status":"CONTROLLED_DERIVATIVE","free_text_released":false},
+ "deid_manifest":{"removed":["PatientName","PatientID","PatientBirthDate","InstitutionName"],
+                  "generalized":["PatientAge→band","StudyDate→shifted"],
+                  "hashed":["StudyInstanceUID"],"prose_withheld":true},
+ "provenance":{"pipeline_version":"0.1.0","source_hash":"sha256:..."}}
+```
+**Field rule:** anything sourced from the report carries `provenance:"report_extraction"` + confidence.
+Anything from a DICOM field carries `native_tag`. A model guess must never wear a clinical fact's clothes.
+
+### Disclosure object (returned on every search)
+```json
+{"k_anon_ok": false, "threshold": 10, "approximate_count": "<10",
+ "records_withheld": true, "reason": "cohort smaller than k-anonymity threshold",
+ "petition_route": "/petition"}
+```
+
+### Role → tier mapping (server-side, never client-trusted)
+`patient→L0` · `researcher→L1` · `clinician→L2` · nothing maps to L3, ever. The role switcher in the
+UI is a **demo identity** with a visible banner; the server still enforces field redaction per role.
+
+## Rules for implementers
+- **Fail closed.** Exception in policy code → suppress, don't serve.
+- Audit is append-only: no update, no delete paths exist in code.
+- k-anon threshold is config, echoed in every response.
+- Compiler runs node-side conceptually — keep PHI handling structurally isolated in `scripts/compiler.py`;
+  the serving layer must never import a function that can see raw prose. **Jim verifies this claim.**

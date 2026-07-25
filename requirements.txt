@@ -1,0 +1,14 @@
+# Lantern — runtime dependencies (Python 3.12)
+fastapi
+uvicorn[standard]
+httpx
+pydantic
+numpy
+jinja2
+python-multipart
+
+# optional: real DICOM ingest lane (docs/process/ticket-lanes.md T-17)
+pydicom
+
+# dev
+pytest
