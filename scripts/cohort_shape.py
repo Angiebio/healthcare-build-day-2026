@@ -245,7 +245,29 @@ def _matches_clinical_filters(
     available_concepts = passport.get("concepts", [])
     if not isinstance(available_concepts, (list, tuple, set)):
         raise TypeError("passport concepts must be a sequence")
-    if not set(ast.clinical.concepts).issubset(set(available_concepts)):
+    # A passport concept is an OBJECT per the frozen contract --
+    # {system, code, display, provenance, confidence} -- not a bare string, because a
+    # code without its system is ambiguous and a code without its provenance is a
+    # clinical claim with no chain of custody. Hashing it directly raises
+    # "unhashable type: dict", so compare on the identity a query actually carries:
+    # the code, and "SYSTEM:CODE" for queries that qualify it (the golden query asks
+    # for "SNOMED:12738006"). Bare strings are still accepted so older or hand-built
+    # fixtures keep working.
+    def _concept_keys(concept: object) -> set[str]:
+        if isinstance(concept, str):
+            return {concept}
+        if isinstance(concept, dict):
+            code = concept.get("code")
+            if code is None:
+                return set()
+            system = concept.get("system")
+            return {str(code)} | ({f"{system}:{code}"} if system else set())
+        raise TypeError(f"unsupported passport concept type: {type(concept).__name__}")
+
+    available_keys: set[str] = set()
+    for concept in available_concepts:
+        available_keys |= _concept_keys(concept)
+    if not set(ast.clinical.concepts).issubset(available_keys):
         return False
 
     summary = passport.get("clean_summary", passport.get("summary", ""))
