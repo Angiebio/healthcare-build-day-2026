@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy &amp; compliance — Lantern</title>
+  <link rel="stylesheet" href="lantern.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="/">Lantern</a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="/">Search</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html">How it works</a>
+    <a href="privacy.html" aria-current="page">Privacy &amp; compliance</a>
+  </nav>
+</header>
+
+<main>
+<article class="prose">
+
+  <h1>Privacy &amp; compliance</h1>
+  <p class="standfirst">What we implemented, what we deliberately did not claim, and how to check both.</p>
+
+  <h2>What we claim</h2>
+
+  <p>Lantern implements a de-identification pipeline <strong>aligned to DICOM PS3.15</strong>, the
+  standard's Attribute Confidentiality Profiles, with policy-gated release evidence attached to every
+  record.</p>
+
+  <p>Each Study Passport ships with a <strong>de-identification manifest</strong> stating exactly what
+  was removed, what was generalized, and what was replaced with a consistent pseudonym. The evidence
+  travels with the data, so a receiving privacy office can audit the transformation rather than trust
+  a description of it.</p>
+
+  <h2>What we deliberately do not claim</h2>
+
+  <p>Lantern is <strong>not</strong> described as HIPAA compliant, and that omission is intentional.
+  Under the Privacy Rule, de-identification is established by one of exactly two routes: Safe Harbor,
+  which requires removal of all eighteen enumerated identifier categories, or Expert Determination,
+  which requires a qualified statistician to document that re-identification risk is very small.
+  Neither is achievable in a five-hour prototype, and a system asserting otherwise should not be
+  trusted with a child's imaging.</p>
+
+  <p>Even properly de-identified data retains residual re-identification risk. Any real deployment
+  would require formal determination, institutional review, and a data use agreement appropriate to
+  the release layer.</p>
+
+  <div class="callout">
+    A privacy claim that cannot be audited is not a privacy claim. We would rather state a narrower
+    thing we can evidence than a broader thing we cannot.
+  </div>
+
+  <h2>Controls implemented</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Control</th><th>What it does</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Direct identifier removal</td>
+        <td>Name, MRN, birth date, institution removed or pseudonymized</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Free-text withholding</td>
+        <td>Report prose never crosses the boundary; only typed facts do</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Generalization</td>
+        <td>Exact age to developmental band; dates consistently shifted</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Small-cohort suppression</td>
+        <td>Cohorts below the k-anonymity threshold return counts and a petition route, not records</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Differencing defense</td>
+        <td>Detects near-identical queries whose difference would isolate a small cohort, and degrades the response</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Append-only audit</td>
+        <td>Every petition and decision recorded with no update or delete path</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Burned-in pixel text handling</td>
+        <td>Studies with overlay or annotation risk are held for human review rather than previewed</td>
+        <td><span class="tag tag--review">held for review</span></td>
+      </tr>
+      <tr>
+        <td>Source image release</td>
+        <td>Full studies are never served — petitions route to the owning institution</td>
+        <td><span class="tag tag--blocked">architecturally absent</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Why small cohorts are the hard case</h2>
+
+  <p>In pediatric and rare disease research, scientific value and re-identification risk rise together.
+  The cohorts that most need to be found are the ones most easily identified. A hospital reporting that
+  it holds exactly one child with a given rare condition may have disclosed that child.</p>
+
+  <p>Lantern therefore suppresses results below a configurable threshold, returning an approximate
+  count and a petition pathway instead of records. The threshold is not hidden inside the system — it
+  is returned in the API response so that any consumer can see the rule being applied to them.</p>
+
+  <p>Suppression alone is insufficient, because an attacker can approach a protected count by asking
+  two nearly identical questions and subtracting. Lantern fingerprints queries and detects that
+  pattern, degrading precision when a sequence of requests would isolate a small group.</p>
+
+  <h2>Data used</h2>
+
+  <p><strong>No real patient data was used at any stage.</strong> All records in this demonstration are
+  synthetic, supplied as part of the challenge. Any patient names visible in the raw source data are
+  fictional, and the pipeline removes them regardless.</p>
+
+  <h2>Verifying these claims</h2>
+
+  <p>The source is public and MIT licensed. The de-identification logic, the disclosure guard, and the
+  suppression threshold are plain, tested functions rather than model behavior — deliberately, so they
+  can be read, tested, and disproven. Every control described on this page corresponds to code you can
+  inspect and a test you can run.</p>
+
+</article>
+</main>
+
+<footer>
+  Lantern · built 25 July 2026 · MIT licensed · synthetic data only
+</footer>
+
+</body>
+</html>

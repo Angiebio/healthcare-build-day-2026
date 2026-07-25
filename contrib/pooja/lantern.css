@@ -1,0 +1,186 @@
+/* ============================================================================
+   lantern.css — the shared stylesheet for the whole product.
+   OWNER: Pooja. This file is yours. Change anything in it.
+
+   Why this file matters: every page in Lantern imports this stylesheet — the
+   content pages AND the researcher search console. So when you restyle here,
+   the whole product changes. You are not decorating a corner; you are setting
+   the visual language everyone else builds inside.
+
+   Design direction (a starting point, not a cage):
+   This is an instrument for clinical researchers and hospital privacy officers.
+   It should feel like something a regulator would trust: dense, legible, calm,
+   precise. Data density reads as SERIOUS to this audience. Deliberately NOT
+   the default AI-startup look — no purple-to-indigo gradient hero, no big
+   rounded cards floating on pastel, no centered emoji.
+
+   Think: a well-typeset scientific instrument panel.
+   ============================================================================ */
+
+:root {
+  /* --- color: restrained, high-contrast, one accent used sparingly --------- */
+  --ink:            #16181d;   /* primary text */
+  --ink-soft:       #4a5058;   /* secondary text */
+  --ink-faint:      #767d87;   /* captions, metadata */
+  --paper:          #fbfbf9;   /* page background — warm, not clinical white */
+  --surface:        #ffffff;   /* cards, panels */
+  --rule:           #dcdcd6;   /* hairlines, table borders */
+
+  --accent:         #4a0873;   /* deep purple — The Real Cat AI. Use sparingly */
+  --accent-soft:    #f0e9f5;
+  --signal:         #5bb545;   /* leaf green — success/permitted states */
+  --caution:        #a8620c;   /* amber — human review required */
+  --stop:           #96271d;   /* red — blocked/suppressed */
+
+  /* --- type: one serif for prose, one mono for data ----------------------- */
+  --font-prose: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-ui:    ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-data:  ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  --measure: 68ch;             /* readable line length — don't exceed for prose */
+  --gap: 1.25rem;
+  --radius: 3px;               /* nearly square. Sharp reads precise. */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8e8e4; --ink-soft: #b3b7bd; --ink-faint: #868c94;
+    --paper: #14161a; --surface: #1c1f24; --rule: #2e333a;
+    --accent: #c9a5e0; --accent-soft: #2a1c36;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- masthead + nav ------------------------------------------------------- */
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.masthead .wordmark {
+  font-family: var(--font-prose);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.masthead .tagline {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+.nav { display: flex; gap: 1.5rem; margin-left: auto; }
+.nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+.nav a:hover { color: var(--ink); border-bottom-color: var(--rule); }
+.nav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* --- page shell ----------------------------------------------------------- */
+main { padding: 2.5rem 1.5rem 5rem; }
+.prose { max-width: var(--measure); margin: 0 auto; }
+.prose h1 {
+  font-family: var(--font-prose);
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+.prose .standfirst {
+  font-family: var(--font-prose);
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin: 0 0 2rem;
+}
+.prose h2 {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.35rem;
+  margin: 2.5rem 0 1rem;
+}
+.prose p { margin: 0 0 1rem; }
+.prose a { color: var(--accent); text-underline-offset: 2px; }
+
+/* a pulled-out claim. Use for the one sentence per page that matters most. */
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  font-family: var(--font-prose);
+  font-size: 1.05rem;
+}
+
+/* --- data surfaces: shared with the search console ------------------------ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-data);
+  font-size: 0.85rem;
+}
+.data-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0.75rem;
+}
+.data-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); }
+.data-table tr:hover td { background: var(--accent-soft); }
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+}
+.tag--permitted { border-color: var(--signal); color: var(--signal); }
+.tag--review    { border-color: var(--caution); color: var(--caution); }
+.tag--blocked   { border-color: var(--stop);    color: var(--stop); }
+
+footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 4rem;
+  padding: 1.5rem;
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* --- responsive ----------------------------------------------------------- */
+@media (max-width: 640px) {
+  .masthead { flex-direction: column; gap: 0.5rem; }
+  .nav { margin-left: 0; flex-wrap: wrap; gap: 1rem; }
+  main { padding: 1.5rem 1rem 3rem; }
+  .prose h1 { font-size: 1.6rem; }
+}

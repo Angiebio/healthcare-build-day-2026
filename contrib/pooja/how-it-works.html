@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How it works — Lantern</title>
+  <link rel="stylesheet" href="lantern.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="/">Lantern</a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="/">Search</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html" aria-current="page">How it works</a>
+    <a href="privacy.html">Privacy &amp; compliance</a>
+  </nav>
+</header>
+
+<main>
+<article class="prose">
+
+  <h1>How it works</h1>
+  <p class="standfirst">The method, for people who want to check our work.</p>
+
+  <h2>The compiler</h2>
+
+  <p>Every hospital node runs a <strong>privacy–utility compiler</strong> over its own studies. The
+  compiler runs inside the hospital's boundary; nothing downstream ever sees its input. It performs
+  five operations in order, and the order matters:</p>
+
+  <ol>
+    <li><strong>Strip direct identifiers.</strong> Patient name, medical record number, birth date,
+      and institution are removed or replaced with a consistent salted pseudonym.</li>
+    <li><strong>Extract measurements from prose.</strong> Quantitative clinical values are parsed out
+      of the report into typed, structured facts — a value, a unit, an anatomical quantity, and the
+      exact source snippet.</li>
+    <li><strong>Code the findings.</strong> Clinical concepts are mapped to standard vocabularies so a
+      search for one term reaches equivalent terms at other institutions.</li>
+    <li><strong>Generalize what remains.</strong> Exact birth date becomes a developmental stage and
+      an age band. Exact study dates are shifted consistently, preserving intervals while destroying
+      the calendar.</li>
+    <li><strong>Stamp provenance.</strong> Every field records where it came from.</li>
+  </ol>
+
+  <p>The output is a Study Passport. The input — including the full report text — never leaves.</p>
+
+  <h2>Why extraction before discard is the whole idea</h2>
+
+  <p>The intuitive approach to privacy is to delete the risky field. But a radiology report is both
+  the riskiest field and the most scientifically valuable one. Deleting it protects the patient and
+  destroys the research value; keeping it does the reverse.</p>
+
+  <p>Compiling resolves the dilemma. We compute the useful facts <em>while still inside the boundary,
+  where the sensitive text is already lawfully held</em>, and then discard the text. What crosses the
+  boundary is a number with a unit and a source — not a sentence that might name a school, a parent,
+  or a hometown.</p>
+
+  <div class="callout">
+    The measurement was always there. It was just written in a form that no search could reach and no
+    privacy office could release.
+  </div>
+
+  <h2>Search</h2>
+
+  <p>A query — typed in natural language or built with filters — is compiled into a
+  <strong>validated query structure</strong> before anything executes. This is a deliberate security
+  boundary: a language model may <em>propose</em> an interpretation, but only deterministic validation
+  <em>disposes</em>. An unrecognized field, an unsupported operator, or an out-of-range value is
+  rejected outright rather than quietly adjusted. A silently dropped filter would be a privacy
+  failure, not an inconvenience.</p>
+
+  <p>The validated query fans out to every hospital node in parallel. Each node evaluates it against
+  its own records and its own release policy, and returns only what its policy permits. Results are
+  combined using rank fusion across independent signals — vocabulary match, measured values, and text
+  relevance — so that no single signal can dominate and the ranking degrades gracefully if one is
+  unavailable.</p>
+
+  <h2>Every result explains itself</h2>
+
+  <p>A result never arrives as a bare score. It carries the reasons it matched, and each underlying
+  fact is labeled with its origin — read directly from a structured field, extracted from the report
+  with a stated confidence, or curated by a human.</p>
+
+  <p>This distinction is not decorative. In clinical research the difference between a documented
+  diagnosis and a software inference is the difference between evidence and a hypothesis. A system
+  that blurs the two is worse than useless. So a machine-derived value in Lantern is always visibly
+  machine-derived, and the sentence it came from is always available for a human to check.</p>
+
+  <h2>Access</h2>
+
+  <p>Discovery ends where authorization begins. When a researcher needs more than the passport,
+  they submit a petition capturing their identity, institution, IRB reference, and purpose. It routes
+  to the hospital that owns the data.</p>
+
+  <p>Lantern does not hold source images and does not serve them. That capability is
+  <em>architecturally absent</em> rather than merely restricted by policy — a distinction that matters,
+  because a system cannot misuse a capability it does not have. Every petition and every decision is
+  appended to an audit trail with no update or delete path.</p>
+
+  <h2>What we did not do</h2>
+
+  <p>The dataset behind this demonstration contains study metadata and radiology reports. It contains
+  no pixel data and no acquisition parameters. Accordingly, Lantern indexes no image-derived features
+  and claims no image analysis. Where a capability would require data this corpus does not contain,
+  the passport says so explicitly, in a field listing what is missing for full computability.</p>
+
+  <p>Naming the gap is part of the design. A researcher deciding whether to spend six months on a
+  cohort is better served by an honest inventory than an impressive one.</p>
+
+</article>
+</main>
+
+<footer>
+  Lantern · built 25 July 2026 · MIT licensed · synthetic data only
+</footer>
+
+</body>
+</html>
