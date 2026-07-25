@@ -1,15 +1,40 @@
-# 🔦 Lantern
+# Lantern
 
-**Federated, privacy-tiered discovery for medical imaging.**
-*Open discovery. Governed pixels.*
+### Federated, privacy-tiered discovery for medical imaging
+**Open discovery. Governed pixels.**
 
 > Existing systems ask *"may I have the scan?"*
-> Lantern asks *"what does the scan already know — and how much of that can you have right now,
+> Lantern asks *"what does the scan already know, and how much of that can you have right now,
 > without the scan moving at all?"*
 
-Built 25 July 2026 at The Open Accelerator Real-World Healthcare Hackathon (Red Hat, Boston) for the
-Boston Children's Hospital challenge: *how do independent hospitals make their imaging data
+Built 25 July 2026 at The Open Accelerator Real-World Healthcare Hackathon (Red Hat, Boston), for a
+challenge brought by Boston Children's Hospital: *how do independent hospitals make their imaging data
 discoverable and securely accessible without centralizing patient data?*
+
+[![tests](https://img.shields.io/badge/tests-115%20passing-5bb545)](tests/)
+[![license](https://img.shields.io/badge/license-MIT-4a0873)](LICENSE)
+[![data](https://img.shields.io/badge/data-synthetic%20only-767d87)](#honest-claims)
+[![python](https://img.shields.io/badge/python-3.12-767d87)](requirements.txt)
+
+<p align="center">
+  <img src="contrib/pooja/architecture.svg" width="820"
+       alt="Raw records are compiled inside the hospital into de-identified Study Passports. Only passports cross to the Lantern broker, which federates search, applies disclosure policy, and routes petitions back to the owning hospital.">
+</p>
+
+---
+
+## Contents
+
+| | |
+|---|---|
+| [The finding that shaped it](#the-problem-we-found-in-the-data) | Why 78.4% of reports changed the design |
+| [What Lantern does](#what-lantern-does) | The compiler, the broker, the petition |
+| [Who it serves](#who-it-serves) | Three populations, one index |
+| [Why it is novel](docs/WHY-ITS-NOVEL.md) | The argument, with evidence |
+| [Privacy controls](#privacy-controls) | What is implemented, and what is not |
+| [Run it](#run-it) | One command, plus a verifier a judge can run |
+| [Architecture](docs/ARCHITECTURE.md) · [API](docs/API-CONTRACT.md) · [Examples](docs/API-EXAMPLES.md) | The technical detail |
+| [Measured results](evals/RESULTS.md) | Our comparison against keyword search, including a loss |
 
 ---
 
@@ -25,7 +50,7 @@ found the thing that shaped the whole build:
 > Ventricular atrial widths in mm. Ejection fractions. Gestational age in weeks.
 
 A fetal-medicine radiologist already measured a lateral ventricular atrial width at 12.4 mm. It sits
-in sentence three of a paragraph — which makes it **simultaneously invisible to search and too risky
+in sentence three of a paragraph, which makes it **simultaneously invisible to search and too risky
 to share**, because free-text reports are the densest PHI surface in the record.
 
 So today you can search *"fetal MRI."* You cannot search
@@ -35,10 +60,10 @@ So today you can search *"fetal MRI."* You cannot search
 
 Each hospital compiles its studies into de-identified **Study Passports** *inside its own trust
 boundary*. The measurements become a structured, queryable axis. **The full report never leaves the
-node** — what crosses is the measured value plus a bounded evidence snippet, so a researcher can
+node**, what crosses is the measured value plus a bounded evidence snippet, so a researcher can
 audit the number against the phrase it came from without receiving the record.
 
-**Utility goes up while exposure goes down.** That is not a tradeoff — it's a compiler.
+**Utility goes up while exposure goes down.** That is not a tradeoff, it's a compiler.
 
 ```
 ┌──── HOSPITAL NODE (trust boundary) ────┐
@@ -51,28 +76,47 @@ audit the number against the phrase it came from without receiving the record.
 └─────────────────────────────────────────┘
 ```
 
-**Full DICOM is architecturally absent.** We do not serve pixels and never hold them — a petition
+**Full DICOM is architecturally absent.** We do not serve pixels and never hold them. A petition
 routes to the owning hospital with IRB number and purpose captured, and writes an append-only audit
-entry. The hospital remains the enforcement point.
+entry. The hospital remains the enforcement point, because the institution carrying the obligation
+should be the institution making the call.
+
+## Who it serves
+
+The same compiled passport answers three different questions. Redaction is decided server-side by
+role, so what a person sees is determined by who they are rather than by what their browser asks for.
+
+<p align="center">
+  <img src="contrib/pooja/audiences.svg" width="860"
+       alt="The same Study Passport served at three tiers: patients see plain-language conditions and broad age bands; computational researchers see queryable measurements with provenance; physicians see comparable cases and a route to the data owner. Full source data is served to nobody.">
+</p>
+
+| Population | The question they arrive with | What the interface gives them |
+|---|---|---|
+| **[Computational researchers](contrib/pooja/for-researchers.html)** | *Does a cohort exist that fits my method, and is it worth pursuing?* | Measurements queryable by threshold, the source sentence behind every number, cohort counts across all hospitals, and a field on every passport naming what the data **cannot** support |
+| **[Physicians](contrib/pooja/for-physicians.html)** | *Has anyone seen a case like this one?* | Comparable cases across institutions, with research similarity labelled as such and held apart from clinical evidence, plus a direct route to the owning hospital |
+| **[Patients and families](contrib/pooja/for-patients.html)** | *Is my child's condition being studied, and where are their images?* | Plain language, an honest answer on whether a cohort exists, counts that stop being precise before they could identify a child, and a separate authenticated path to their own records |
+
+**One index, three lenses, and the same disclosure rules applied to all of them.**
 
 ## Privacy controls
 
-- **Field-minimizing de-identification, PS3.15-inspired** — direct identifiers removed or
+- **Field-minimizing de-identification, PS3.15-inspired**, direct identifiers removed or
   pseudonymized, ages generalized, with a per-study manifest recording what was removed,
   generalized, and pseudonymized. The evidence travels with the data. *(Our input is the challenge's
   JSON metadata rather than DICOM objects, so this is the profile's field-minimization discipline
-  applied to that shape — not a certified PS3.15 implementation.)*
-- **k-anonymity suppression** on small cohorts — the threshold is a config constant surfaced in every
+  applied to that shape, not a certified PS3.15 implementation.)*
+- **k-anonymity suppression** on small cohorts, the threshold is a config constant surfaced in every
   API response. Transparent, not hidden. Fails closed.
-- **Differencing-attack defense** — canonical query fingerprints, held **per hospital** because a
+- **Differencing-attack defense**, canonical query fingerprints, held **per hospital** because a
   safe network total can hide an unsafe single-node delta. **Tested against one-constraint
   subtraction**; multi-axis and cross-session attacks are named limitations, not solved problems.
-- **Provenance on extracted facts** — every measurement and concept carries its source
+- **Provenance on extracted facts**, every measurement and concept carries its source
   (`report_extraction` with confidence and snippet, or `curated`). A model guess never wears a
   clinical fact's clothes.
 
 **Not implemented, and deliberately not claimed:** no LLM is in the request path (natural-language
-input is *validated*, never interpreted — see `scripts/query_ast.py`); no image embeddings, no
+input is *validated*, never interpreted, see `scripts/query_ast.py`); no image embeddings, no
 acquisition-parameter indexing, and no similarity search, because the supplied corpus contains no
 pixel data or acquisition fields; approval returns a **simulated retrieval grant**, not a live
 retrieval endpoint.
@@ -84,7 +128,7 @@ retrieval endpoint.
   are the only two routes and neither is a five-hour exercise.
 - Extracted measurements carry stated confidence and provenance. They are **not clinically validated**.
 - **No real PHI was used.** Synthetic challenge data only, deliberately, on day one.
-- The three-node federation is real fan-out across three separate services — running on one laptop.
+- The three-node federation is real fan-out across three separate services, running on one laptop.
 
 ## Run it
 
@@ -97,7 +141,7 @@ pip install -r requirements.txt
 # federates over them and serves the researcher console.
 python -m app.run_all            # console + API at http://localhost:8000
 
-# In another terminal — a judge can watch every demo claim verify against the live API:
+# In another terminal, a judge can watch every demo claim verify against the live API:
 python tools/verify_demo.py
 
 pytest -q
@@ -109,7 +153,7 @@ see [`docs/API-EXAMPLES.md`](docs/API-EXAMPLES.md).
 ## Layout
 
 ```
-scripts/   deterministic core — measurement extraction, query AST, rank fusion, k-anon guard
+scripts/   deterministic core, measurement extraction, query AST, rank fusion, k-anon guard
 app/       FastAPI broker: federated fan-out, disclosure policy, petition + audit
 docs/      architecture, frozen API contract, design rationale
 tests/     pytest
@@ -124,9 +168,9 @@ aggregate numbers it did not compute, and cannot alter what was disclosed.
 ## Team
 
 Built by Angie Johnson, Pooja Upadhyay, and a cooperative of AI agents (Flame, TV, Parallax, Jim, Kai,
-Ying) — The Real Cat AI Labs. Regulatory and quality direction: 40 combined years of FDA/EMA
+Ying). The Real Cat AI Labs. Regulatory and quality direction: 40 combined years of FDA/EMA
 regulatory and QARA practice.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
