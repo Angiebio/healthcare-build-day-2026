@@ -21,9 +21,7 @@ Out:  app/static/fixtures.json
 
 from __future__ import annotations
 
-import hashlib
 import json
-import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -34,8 +32,12 @@ if sys.version_info[:2] != (3, 12):  # Jim's fail-loud guard -- scream early, no
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from scripts.age_band import pediatric_stage, public_age_band, to_age_years  # noqa: E402
-from scripts.measure_extract import extract_measurements  # noqa: E402
+from scripts.compiler import (  # noqa: E402,F401
+    GEST,
+    REMOVED,
+    compile_passport,
+    pseudonym,
+)
 
 DATA = Path(r"C:\Users\ajohn\hackdata\provider-node\data")
 OUT = REPO / "app" / "static" / "fixtures.json"
@@ -48,101 +50,6 @@ NODES = {
     "BWH": {"file": "bwh_data.json", "port": 8013, "label": "Brigham & Women's",
             "policy": "petition_required"},
 }
-
-# Gestational age is the population axis for fetal studies. PatientAge on a fetal
-# record is the MOTHER's age (14-35y) -- banding it as the patient's would label a
-# fetus "adult". Correction v2 calls this out; we honour it by carrying `basis`.
-GEST = re.compile(r"(\d+(?:\.\d+)?)\s*weeks?\s+gestation", re.IGNORECASE)
-
-BODY_SITE = {
-    "BRAIN": {"system": "SCT", "code": "12738006", "display": "Brain"},
-    "HEART": {"system": "SCT", "code": "80891009", "display": "Heart"},
-    "FETAL": {"system": "SCT", "code": "83418008", "display": "Fetal structure"},
-}
-
-REMOVED = ["PatientName", "PatientID", "PatientBirthDate", "InstitutionName"]
-
-
-def pseudonym(node: str, study_id: str) -> str:
-    """Salted, consistent, one-way. Cohorts stay linkable; the person does not."""
-    return "sha256:" + hashlib.sha256(f"lantern|{node}|{study_id}".encode()).hexdigest()[:16]
-
-
-def compile_passport(node: str, rec: dict) -> dict:
-    body = (rec.get("BodyPartExamined") or "").upper()
-    report = rec.get("Diagnosis") or ""
-    measurements = [m.to_dict() for m in extract_measurements(report)]
-
-    # Prefer TV's extractor for gestational age -- it catches phrasings my regex
-    # doesn't ("at 24 weeks", "24-week fetus"). Regex is only the fallback.
-    weeks = next(
-        (m["value"] for m in measurements if m["quantity"] == "gestational_age_weeks"),
-        None,
-    )
-    if weeks is None:
-        gest = GEST.search(report)
-        weeks = float(gest.group(1)) if gest else None
-
-    if body == "FETAL":
-        # A fetus is NEVER banded on PatientAge -- that field is the mother's age.
-        # If gestational age is genuinely absent we say "unknown" and mean it. Guessing
-        # here is how a fetus ends up labelled "adult" on a projector.
-        population = {
-            "basis": "gestational" if weeks is not None else "unknown",
-            "gestational_age_weeks": weeks,
-            "pediatric_stage": "fetal",
-            "public_age_band": "fetal",
-            "sex": rec.get("PatientSex"),
-        }
-    else:
-        years = to_age_years(rec.get("PatientAge") or "")
-        population = {
-            "basis": "chronological",
-            "gestational_age_weeks": None,
-            "pediatric_stage": pediatric_stage(years) if years is not None else "unknown",
-            "public_age_band": public_age_band(years) if years is not None else "unknown",
-            "sex": rec.get("PatientSex"),
-        }
-
-    quantities = sorted({m["quantity"] for m in measurements})
-    return {
-        "passport_id": f"{node.lower()}:{rec.get('StudyID')}",
-        "owner": {"node": node, "label": NODES[node]["label"], "request_route": "/petition"},
-        "imaging": {
-            "modality": rec.get("Modality"),
-            "body_site": BODY_SITE.get(body, {"system": "SCT", "code": "", "display": body.title()}),
-            "body_part_raw": body,
-        },
-        "population": population,
-        "measurements": measurements,
-        "computational_readiness": {
-            "has_quantitative_measurements": bool(measurements),
-            "measurement_count": len(measurements),
-            "quantities_available": quantities,
-            "supports_quantitative_cohort_analysis": bool(measurements),
-            "supports_threshold_stratification": bool(measurements),
-            "missing_for_full_computability": ["voxel_geometry", "acquisition_parameters", "pixel_data"],
-        },
-        "privacy": {
-            "highest_release_layer": "L1",
-            "patient_identity_removed": True,
-            "release_status": "CONTROLLED_DERIVATIVE",
-            "free_text_released": False,
-        },
-        "deid_manifest": {
-            "removed": REMOVED,
-            "generalized": (
-                ["PatientAge→gestational weeks (from report)", "StudyDate→shifted"]
-                if population["basis"] == "gestational"
-                else ["PatientAge→band", "StudyDate→shifted"]
-            ),
-            "hashed": ["StudyInstanceUID→pseudonym"],
-            "prose_withheld": True,
-            "pseudonym": pseudonym(node, str(rec.get("StudyID"))),
-        },
-        "provenance": {"pipeline_version": "0.1.0-fixture", "source": "provider-node challenge corpus"},
-    }
-
 
 def main() -> None:
     if not DATA.exists():

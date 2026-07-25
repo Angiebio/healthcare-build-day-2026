@@ -126,6 +126,10 @@ async def search(body: SearchBody) -> dict[str, Any]:
     # 4) Differencing defense (per session). Stage the count the broker can actually see.
     known_total = sum(nr["candidate_count"] for nr in node_results if nr.get("candidate_count"))
     session_log = _SESSIONS.setdefault(body.session, [])
+    # ORDER IS LOAD-BEARING, and it is stage-then-assess by design: the guard
+    # reads the current query's own pre-disclosure count from its staged record
+    # (see scripts/query_guard.assess_disclosure_risk). Do not "fix" this to
+    # assess-then-append -- that starves the guard of the count it subtracts.
     session_log.append(QueryRecord(ast=ast, result_count=known_total))
     verdict = assess_disclosure_risk(ast, session_log, k=K_THRESHOLD)
 

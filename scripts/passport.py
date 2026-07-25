@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 # Where a fact came from. This vocabulary is closed on purpose: an unlabelled
 # fact is not permitted to exist.
@@ -67,8 +67,11 @@ class MeasurementFact(BaseModel):
     quantity: str                          # from the extractor's closed vocabulary
     value: float
     unit: str
+    raw_value: float
+    raw_unit: str
     laterality: Optional[str] = None
     qualifier: Optional[str] = None
+    span: tuple[int, int]
     confidence: float
     snippet: str                           # the phrase it came from, for human audit
     provenance: Provenance = "report_extraction"
@@ -121,9 +124,16 @@ class DeidManifest(BaseModel):
     they should be able to read it.
     """
 
+    model_config = ConfigDict(populate_by_name=True)
+
     removed: list[str] = Field(default_factory=list)
     generalized: list[str] = Field(default_factory=list)
-    pseudonymized: list[str] = Field(default_factory=list)
+    pseudonymized: list[str] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("pseudonymized", "hashed"),
+        serialization_alias="hashed",
+    )
+    pseudonym: Optional[str] = None
     prose_withheld: bool = True
     pixel_data_present: bool = False
     profile: str = "DICOM PS3.15-aligned (Basic Application Level Confidentiality Profile)"
@@ -138,8 +148,13 @@ class Privacy(BaseModel):
 
 
 class Owner(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     node: str
-    display_name: str
+    display_name: str = Field(
+        validation_alias=AliasChoices("display_name", "label"),
+        serialization_alias="label",
+    )
     request_route: str = "/petition"
 
 

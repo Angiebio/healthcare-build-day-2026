@@ -21,8 +21,33 @@ from typing import Any
 from scripts.query_ast import NumericConstraint, QueryAST
 
 
+# Some clinical quantities are a family, not a single name. A radiologist writing
+# "the left ventricular ejection fraction is 34%" and one writing "ejection
+# fraction 34%" have reported the same clinically actionable thing, and a
+# cardiologist searching for reduced EF means both. Exact string matching on the
+# canonical quantity silently drops the specific forms -- which is worse than a
+# crash, because the search returns a confident, wrong, smaller number.
+#
+# So a query for the general quantity matches its specific members; a query for a
+# specific member stays specific (asking for LVEF must not return RVEF).
+_QUANTITY_FAMILIES: dict[str, frozenset[str]] = {
+    "ejection_fraction": frozenset({
+        "ejection_fraction",
+        "left_ventricular_ejection_fraction",
+        "right_ventricular_ejection_fraction",
+    }),
+}
+
+
+def _quantity_matches(measured: str | None, requested: str) -> bool:
+    """Does this measurement answer the question that was asked?"""
+    if measured is None:
+        return False
+    return measured in _QUANTITY_FAMILIES.get(requested, frozenset({requested}))
+
+
 def _passes_numeric(measurement: dict[str, Any], c: NumericConstraint) -> bool:
-    if measurement.get("quantity") != c.quantity:
+    if not _quantity_matches(measurement.get("quantity"), c.quantity):
         return False
     if measurement.get("unit") != c.unit:
         return False
