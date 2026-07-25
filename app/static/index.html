@@ -41,7 +41,21 @@
   <strong>DEMO IDENTITY</strong>
   <span>no real authentication &middot; the server enforces field redaction on the asserted role</span>
   <span class="spacer"></span>
-  <label for="role">Acting as</label>
+  <label for="role">Acting as
+    <span class="info" tabindex="0" role="note" aria-label="About access tiers">i
+      <span class="tip"><strong>Access tiers.</strong>
+      <b>L0</b> patients and the public: plain-language conditions, broad age bands,
+      and whether a cohort exists. No records.<br>
+      <b>L1</b> researchers: measured values, the sentence each came from, confidence
+      and provenance, cohort counts. Still no report and no images.<br>
+      <b>L2</b> clinicians: everything at L1 plus narrower banding and a direct route
+      to the owning hospital.<br>
+      <b>L3</b> source data: <em>never served</em>. There is no code path that returns
+      it. A petition routes to the hospital, which decides.<br>
+      Redaction is applied on the server, so the browser cannot ask for more than
+      the role allows.</span>
+    </span>
+  </label>
   <select id="role" style="width:auto">
     <option value="researcher">Researcher &mdash; L1</option>
     <option value="clinician">Clinician &mdash; L2</option>
@@ -76,8 +90,23 @@
       <label class="check"><input type="checkbox" name="body" value="HEART"> Heart</label>
     </div>
     <div class="field">
-      <label>Modality</label>
-      <label class="check"><input type="checkbox" name="modality" value="MR" checked> MR</label>
+      <label>Modality
+        <span class="info" tabindex="0" role="note" aria-label="About modality coverage">i
+          <span class="tip">The supplied corpus is entirely MR. The other modalities are
+          indexed on the same axis and will return zero here, which is the honest
+          answer rather than a hidden option.</span>
+        </span>
+      </label>
+      <label class="check"><input type="checkbox" name="modality" value="MR" checked> MR
+        <span class="count-hint">2,700</span></label>
+      <label class="check"><input type="checkbox" name="modality" value="CT"> CT
+        <span class="count-hint">0 in corpus</span></label>
+      <label class="check"><input type="checkbox" name="modality" value="PT"> PET / PET-CT
+        <span class="count-hint">0 in corpus</span></label>
+      <label class="check"><input type="checkbox" name="modality" value="US"> Ultrasound
+        <span class="count-hint">0 in corpus</span></label>
+      <label class="check"><input type="checkbox" name="modality" value="CR"> X-ray
+        <span class="count-hint">0 in corpus</span></label>
     </div>
 
     <h2>Population</h2>
@@ -140,6 +169,15 @@
     <div class="field">
       <label class="check">
         <input type="checkbox" id="diversify"> Optimise cohort for site diversity
+        <span class="info" tabindex="0" role="note" aria-label="About cohort diversity">i
+          <span class="tip">Off, results are ranked purely by how well they match.
+          On, the cohort is selected to <strong>span hospitals, age bands, sex, body
+          region and measurement profile</strong> instead of returning many
+          near-identical studies. Useful when you are training a model and need it
+          to generalise across sites rather than overfit one scanner population.
+          Uses maximal marginal relevance, deterministic, so the same query always
+          returns the same cohort.</span>
+        </span>
       </label>
     </div>
 
@@ -180,12 +218,15 @@
 
 <!-- ============ PASSPORT DETAIL ============ -->
 <div class="scrim" id="scrim" hidden></div>
+<div id="filter-warn" hidden></div>
+
 <aside class="panel" id="panel" hidden aria-label="Study passport detail">
   <div class="panel-head">
     <h2 id="p-id"></h2>
     <span class="tag" id="p-release"></span>
     <button class="btn btn--ghost btn--sm" id="p-close" style="margin-left:auto">Close</button>
   </div>
+  <div class="panel-action" id="p-action"></div>
   <div id="p-body"></div>
 </aside>
 

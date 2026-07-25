@@ -333,3 +333,72 @@ input:focus, select:focus, textarea:focus {
   display: grid;
   gap: 0.45rem;
 }
+
+/* The petition is the product, not a footnote. It sits directly under the
+   passport heading in the brand orange, which is used nowhere else as a fill,
+   so nothing on the page competes with it. */
+.panel-action {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 0 1rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1rem;
+}
+.btn--petition {
+  background: #a85e08;
+  border-color: #a85e08;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: .01em;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0;
+}
+.btn--petition:hover { background: #8d4e06; border-color: #8d4e06; }
+.panel-action-note { font-size: 0.76rem; color: var(--ink-faint); max-width: 26ch; line-height: 1.35; }
+
+/* Filter confirmation. Deliberately blocking: the whole point is that the user
+   did not notice the filter, so a passive hint would not have helped. */
+#filter-warn {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgb(22 32 63 / 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+}
+#filter-warn[hidden] { display: none; }
+.warn-box {
+  background: var(--surface); border: 1px solid var(--rule);
+  border-top: 4px solid #a85e08; border-radius: 0;
+  max-width: 30rem; padding: 1.4rem 1.5rem;
+  box-shadow: 0 12px 40px rgb(22 32 63 / 0.28);
+}
+.warn-box h3 { margin: 0 0 0.6rem; font-size: 1.02rem; color: var(--navy); }
+.warn-box ul { margin: 0.4rem 0 0.8rem 1.1rem; padding: 0; font-family: var(--font-data); font-size: 0.82rem; }
+.warn-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+/* Inline explainers. Hover and keyboard-focus both open them, because a
+   regulator reading this with a keyboard should not be locked out of the
+   explanation of what an access tier is. */
+.info {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.05rem; height: 1.05rem; margin-left: 0.35rem;
+  border: 1px solid var(--rule); border-radius: 50%;
+  font-size: 0.66rem; font-weight: 700; font-style: italic;
+  color: var(--ink-faint); cursor: help; position: relative; vertical-align: middle;
+}
+.info:hover, .info:focus-visible { color: #a85e08; border-color: #a85e08; outline: none; }
+.info .tip {
+  position: absolute; left: 50%; top: calc(100% + 0.5rem); transform: translateX(-50%);
+  width: 21rem; max-width: 74vw; padding: 0.7rem 0.85rem;
+  background: var(--navy); color: #fff;
+  border-left: 3px solid #f7921e; border-radius: 0;
+  font: 400 0.78rem/1.5 var(--font-ui); font-style: normal;
+  text-transform: none; letter-spacing: 0; text-align: left;
+  box-shadow: 0 10px 30px rgb(22 32 63 / 0.3);
+  opacity: 0; visibility: hidden; z-index: 70; pointer-events: none;
+}
+.info .tip b { color: #f7921e; }
+.info:hover .tip, .info:focus-visible .tip { opacity: 1; visibility: visible; }
+.count-hint { margin-left: auto; font-family: var(--font-data); font-size: 0.68rem; color: var(--ink-faint); }
+.check { display: flex; align-items: center; gap: 0.45rem; }

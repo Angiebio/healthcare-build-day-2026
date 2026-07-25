@@ -621,10 +621,15 @@ function openPassport(r) {
       <ul><li>${esc(p.deid_manifest.pseudonym)}</li></ul>
     </div>
 
-    <div style="margin-top:1.25rem">
-      <button class="btn" id="p-petition">Petition ${esc(p.owner.node)} for source access</button>
-    </div>`;
+`;
 
+  // The petition is the point of the whole panel, so it sits at the top where
+  // the eye lands, not buried under the manifest where it needs scrolling to.
+  $('p-action').innerHTML =
+    `<button class="btn btn--petition" id="p-petition">`
+    + `Petition ${esc(p.owner.node)} for source access</button>`
+    + `<span class="panel-action-note">Routes to the owning hospital. `
+    + `Writes an append-only audit entry.</span>`;
   $('p-petition').onclick = () => openPetition(p);
   $('panel').hidden = false;
   $('scrim').hidden = false;
@@ -741,6 +746,71 @@ function syncUnit() {
 /* ------------------------------------------------------------------- wire */
 /* One entry point for every search, live or local. Errors surface in the results
    pane instead of the console log -- on stage nobody is looking at devtools. */
+
+// A filter left ticked from a previous search silently narrows the next one.
+// Searching "glioblastoma" with Fetal still checked returns nothing, and the
+// empty result looks like the search failing rather than the filter working.
+// So when free text and filters are both present, say so and let the user pick.
+function describeActiveFilters() {
+  const parts = [];
+  const named = (name, label) => {
+    const vals = [...document.querySelectorAll(`input[name="${name}"]:checked`)]
+      .map((e) => e.value);
+    if (vals.length) parts.push(`${label}: ${vals.join(', ')}`);
+  };
+  named('body', 'Body site');
+  named('modality', 'Modality');
+  const stage = $('stage') && $('stage').value;
+  if (stage && stage !== 'any') parts.push(`Stage: ${stage}`);
+  const gmin = $('ga-min') && $('ga-min').value;
+  const gmax = $('ga-max') && $('ga-max').value;
+  if (gmin || gmax) parts.push(`Gestational age: ${gmin || '–'} to ${gmax || '–'} wk`);
+  const q = $('num-quantity') && $('num-quantity').value;
+  const v = $('num-value') && $('num-value').value;
+  if (q && q !== 'any' && v !== '') parts.push('A measurement threshold');
+  return parts;
+}
+
+function clearAllFilters() {
+  document.querySelectorAll('.rail input[type="checkbox"]').forEach((c) => { c.checked = false; });
+  document.querySelectorAll('.rail select').forEach((sel) => { sel.selectedIndex = 0; });
+  document.querySelectorAll('.rail input[type="number"]').forEach((n) => { n.value = ''; });
+}
+
+function confirmFilters(onProceed) {
+  const active = describeActiveFilters();
+  const text = ($('nl') && $('nl').value || '').trim();
+  // Only worth interrupting when the combination can silently contradict itself:
+  // a body-site filter plus either free text or a measurement on another organ.
+  const bodySite = [...document.querySelectorAll('input[name="body"]:checked')].map((e) => e.value);
+  const quantity = ($('num-quantity') && $('num-quantity').value) || '';
+  const measuring = quantity && quantity !== 'any' && ($('num-value') || {}).value !== '';
+  const cardiac = /ejection|chamber|regurgitant/.test(quantity);
+  const fetalOnly = /gestational/.test(quantity);
+  const contradiction =
+    (cardiac && bodySite.length && !bodySite.includes('HEART')) ||
+    (fetalOnly && bodySite.length && !bodySite.includes('FETAL'));
+  if (!contradiction && (!text || active.length === 0)) { onProceed(); return; }
+
+  $('filter-warn').innerHTML = `
+    <div class="warn-box" role="alertdialog" aria-labelledby="warn-title">
+      <h3 id="warn-title">You have ${active.length} filter${active.length > 1 ? 's' : ''} still applied</h3>
+      <p>Searching <strong>${esc(text)}</strong> together with:</p>
+      <ul>${active.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
+      <p class="status">Both are applied at once, so a term that does not occur under
+         these filters will return nothing.</p>
+      <div class="warn-actions">
+        <button class="btn btn--petition" id="warn-clear">Clear filters and search</button>
+        <button class="btn" id="warn-go">Search with filters</button>
+        <button class="btn btn--ghost" id="warn-cancel">Cancel</button>
+      </div>
+    </div>`;
+  $('filter-warn').hidden = false;
+  $('warn-clear').onclick = () => { clearAllFilters(); $('filter-warn').hidden = true; onProceed(); };
+  $('warn-go').onclick = () => { $('filter-warn').hidden = true; onProceed(); };
+  $('warn-cancel').onclick = () => { $('filter-warn').hidden = true; };
+}
+
 async function go() {
   $('status-line').textContent = 'searching…';
   try {
@@ -749,6 +819,28 @@ async function go() {
     $('status-line').textContent =
       `${res.results.length} shown · ${res.timing_ms} ms · ` +
       `${DATA.live ? 'live broker' : 'local fixtures'}`;
+
+    // Zero results with filters applied reads as a broken search. Nearly always
+    // it is a filter left over from the previous query quietly contradicting
+    // this one, so say which filters were in force and offer to drop them.
+    const suppressed = (res.nodes_queried || []).some((n) => n && n.k_anon_ok === false);
+    if (res.results.length === 0 && !suppressed) {
+      const active = describeActiveFilters();
+      if (active.length) {
+        $('guard').innerHTML = `
+          <div class="disclosure">
+            <h3>No studies matched this combination</h3>
+            <p>These filters were applied together:</p>
+            <ul>${active.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
+            <p class="status">A measurement recorded in one body region will never
+               match a filter for another. Ejection fractions occur in heart studies,
+               atrial widths in fetal studies.</p>
+            <button class="btn btn--petition" id="zero-clear">Clear filters and search again</button>
+          </div>`;
+        const b = $('zero-clear');
+        if (b) b.onclick = () => { clearAllFilters(); go(); };
+      }
+    }
   } catch (err) {
     $('guard').innerHTML = `
       <div class="disclosure">
@@ -763,7 +855,7 @@ async function go() {
 }
 
 function wire() {
-  $('run').onclick = go;
+  $('run').onclick = () => confirmFilters(go);
   $('reset').onclick = () => { reset(); go(); };
   $('q-quantity').onchange = syncUnit;
   $('nl').onkeydown = (e) => { if (e.key === 'Enter') go(); };
