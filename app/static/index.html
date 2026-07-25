@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern — Researcher Console</title>
+<!-- Pooja's stylesheet owns the visual language. console.css adds layout only. -->
+<link rel="stylesheet" href="../../contrib/pooja/lantern.css">
+<link rel="stylesheet" href="console.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="#">Lantern</a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="#" aria-current="page">Search</a>
+    <a href="../../contrib/pooja/how-it-works.html">How it works</a>
+    <a href="../../contrib/pooja/privacy.html">Privacy</a>
+    <a href="../../contrib/pooja/about.html">About</a>
+  </nav>
+</header>
+
+<!-- Never let a demo role be mistaken for an authenticated session. -->
+<div class="demo-banner">
+  <strong>DEMO IDENTITY</strong>
+  <span>no real authentication &middot; the server enforces field redaction on the asserted role</span>
+  <span class="spacer"></span>
+  <label for="role">Acting as</label>
+  <select id="role" style="width:auto">
+    <option value="researcher">Researcher &mdash; L1</option>
+    <option value="clinician">Clinician &mdash; L2</option>
+    <option value="patient">Patient / public &mdash; L0</option>
+  </select>
+  <span class="status" id="source-badge">source: &hellip;</span>
+</div>
+
+<div class="console">
+
+  <!-- ============ FILTER RAIL ============ -->
+  <aside class="rail">
+    <h2>Natural language</h2>
+    <div class="field">
+      <input type="text" id="nl" placeholder="fetal ventriculomegaly over 10 mm"
+             aria-label="Natural language query">
+      <p class="status" style="margin:.3rem 0 0">
+        Optional. Filters below work with zero model dependency.
+      </p>
+    </div>
+
+    <h2>Imaging</h2>
+    <div class="field">
+      <label>Body site</label>
+      <label class="check"><input type="checkbox" name="body" value="FETAL"> Fetal</label>
+      <label class="check"><input type="checkbox" name="body" value="BRAIN"> Brain</label>
+      <label class="check"><input type="checkbox" name="body" value="HEART"> Heart</label>
+    </div>
+    <div class="field">
+      <label>Modality</label>
+      <label class="check"><input type="checkbox" name="modality" value="MR" checked> MR</label>
+    </div>
+
+    <h2>Population</h2>
+    <div class="field">
+      <label for="stage">Pediatric stage</label>
+      <select id="stage">
+        <option value="">any</option>
+        <option value="fetal">fetal</option>
+        <option value="neonate">neonate</option>
+        <option value="infant">infant</option>
+        <option value="early_childhood">early childhood</option>
+        <option value="school_age">school age</option>
+        <option value="adolescent">adolescent</option>
+        <option value="adult">adult</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Gestational age (weeks)</label>
+      <div class="constraint">
+        <div class="row">
+          <span class="status" style="align-self:center">between</span>
+          <input type="number" id="gest-min" placeholder="min" step="1">
+          <input type="number" id="gest-max" placeholder="max" step="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- The novel axis. It gets its own block and an accent edge. -->
+    <h2>Measurement constraint</h2>
+    <div class="field">
+      <div class="constraint">
+        <select id="q-quantity">
+          <option value="">— no numeric constraint —</option>
+          <option value="lateral_ventricular_atrial_width">lateral ventricular atrial width</option>
+          <option value="ejection_fraction">ejection fraction</option>
+          <option value="left_ventricular_ejection_fraction">LV ejection fraction</option>
+          <option value="right_ventricular_ejection_fraction">RV ejection fraction</option>
+          <option value="gestational_age_weeks">gestational age</option>
+          <option value="lesion_dimension">lesion dimension</option>
+          <option value="chamber_volume">chamber volume</option>
+        </select>
+        <div class="row">
+          <select id="q-op">
+            <option value="gt">&gt;</option>
+            <option value="gte">&ge;</option>
+            <option value="lt">&lt;</option>
+            <option value="lte">&le;</option>
+          </select>
+          <input type="number" id="q-value" placeholder="value" step="0.1">
+          <span class="status" id="q-unit" style="align-self:center"></span>
+        </div>
+      </div>
+      <p class="status" style="margin:.4rem 0 0">
+        Compiled from prose inside the hospital boundary. This axis does not exist
+        in any catalogue today.
+      </p>
+    </div>
+
+    <h2>Access</h2>
+    <div class="field">
+      <label class="check">
+        <input type="checkbox" id="diversify"> Optimise cohort for site diversity
+      </label>
+    </div>
+
+    <div class="field" style="margin-top:1.25rem">
+      <button class="btn btn--wide" id="run">Search the network</button>
+    </div>
+    <div class="field">
+      <button class="btn btn--ghost btn--wide btn--sm" id="reset">Reset filters</button>
+    </div>
+
+    <h2>Demo ladder</h2>
+    <div class="field">
+      <button class="btn btn--ghost btn--wide btn--sm" data-beat="1a">1a &nbsp;pediatric brain tumour</button>
+      <button class="btn btn--ghost btn--wide btn--sm" data-beat="1b">1b &nbsp;ejection fraction &lt; 40%</button>
+      <button class="btn btn--ghost btn--wide btn--sm" data-beat="2">2 &nbsp;atrial width &gt; 10 mm</button>
+      <button class="btn btn--ghost btn--wide btn--sm" data-beat="3">3 &nbsp;severe &gt; 15 mm</button>
+    </div>
+  </aside>
+
+  <!-- ============ RESULTS ============ -->
+  <main class="results">
+    <div class="node-strip" id="nodes"></div>
+    <div id="expansion"></div>
+    <div id="disclosure"></div>
+    <div id="funnel" class="funnel"></div>
+
+    <table class="data-table" id="table">
+      <thead>
+        <tr>
+          <th style="width:9rem">Passport</th>
+          <th style="width:4.5rem">Node</th>
+          <th style="width:5rem">Site</th>
+          <th style="width:8rem">Population</th>
+          <th>Matched measurement</th>
+          <th style="width:5rem">Release</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="empty" id="empty" hidden>No studies match. Widen a constraint.</p>
+  </main>
+</div>
+
+<!-- ============ PASSPORT DETAIL ============ -->
+<div class="scrim" id="scrim" hidden></div>
+<aside class="panel" id="panel" hidden aria-label="Study passport detail">
+  <div class="panel-head">
+    <h2 id="p-id"></h2>
+    <span class="tag" id="p-release"></span>
+    <button class="btn btn--ghost btn--sm" id="p-close" style="margin-left:auto">Close</button>
+  </div>
+  <div id="p-body"></div>
+</aside>
+
+<!-- ============ PETITION ============ -->
+<div class="modal" id="petition" hidden aria-label="Access petition">
+  <h2>Petition for source access</h2>
+  <p class="sub">Routes to the owning hospital. Lantern never holds the source data.</p>
+  <form id="petition-form">
+    <div class="field"><label for="pet-name">Requester</label>
+      <input type="text" id="pet-name" value="Dr. Jorgenson" required></div>
+    <div class="field"><label for="pet-inst">Institution</label>
+      <input type="text" id="pet-inst" value="Academic Hospital X" required></div>
+    <div class="field"><label for="pet-irb">IRB number</label>
+      <input type="text" id="pet-irb" value="IRB-2026-441" required></div>
+    <div class="field"><label for="pet-purpose">Purpose</label>
+      <textarea id="pet-purpose" rows="3" required>Retrospective cohort study of fetal ventriculomegaly outcomes.</textarea></div>
+    <div class="field"><label for="pet-tier">Tier requested</label>
+      <select id="pet-tier">
+        <option value="L2">L2 — clinician view</option>
+        <option value="L3">L3 — source data (owner adjudicates)</option>
+      </select></div>
+    <div class="actions">
+      <button type="button" class="btn btn--ghost" id="pet-cancel">Cancel</button>
+      <button type="submit" class="btn">Submit petition</button>
+    </div>
+  </form>
+  <div id="pet-receipt" hidden></div>
+</div>
+
+<script src="console.js"></script>
+</body>
+</html>

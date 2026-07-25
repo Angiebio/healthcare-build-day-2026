@@ -1,0 +1,320 @@
+/* ============================================================================
+   console.css — LAYOUT ONLY for the researcher search console.
+   OWNER: Flame2 (T-14) · but the visual language is POOJA'S, not mine.
+
+   THE BOUNDARY, so we don't fight over the same pixels:
+   lantern.css owns the look — every colour, font, weight and radius below is a
+   var() reaching into her file. Nothing here invents a palette, a typeface, or a
+   shadow. This file only does what a stylesheet must do to make a two-pane
+   instrument work: grid, sticky, overflow, and form controls that lantern.css
+   doesn't define yet (it has no button or input rules).
+
+   Pooja — if you want the console to look different, restyle in lantern.css and
+   it will win, because these rules set structure and defer on style. If you'd
+   rather absorb these classes into your file wholesale, take them; delete this
+   file and I'll relink. Class contract is listed in contrib/pooja/README.md.
+
+   Projector note: the console bumps --font-data up one notch from lantern's
+   0.85rem. Judged from the back of a room, 0.85rem monospace disappears.
+   ============================================================================ */
+
+.console {
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) 1fr;
+  gap: 0;
+  align-items: start;
+  min-height: calc(100vh - 60px);
+}
+
+/* --- demo identity: must never be mistakable for a real auth session ------ */
+.demo-banner {
+  background: repeating-linear-gradient(
+    45deg, var(--accent-soft), var(--accent-soft) 10px,
+    transparent 10px, transparent 20px);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.4rem 1.5rem;
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.demo-banner strong { color: var(--accent); }
+.demo-banner .spacer { margin-left: auto; }
+
+/* --- filter rail ----------------------------------------------------------- */
+.rail {
+  border-right: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1.25rem;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+.rail h2 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.3rem;
+  margin: 1.5rem 0 0.75rem;
+}
+.rail h2:first-child { margin-top: 0; }
+
+.field { margin-bottom: 0.7rem; }
+.field > label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.2rem;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  padding: 0.12rem 0;
+  cursor: pointer;
+}
+.check input { accent-color: var(--accent); margin: 0; }
+
+input[type="text"], input[type="number"], select, textarea {
+  width: 100%;
+  font-family: var(--font-data);
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.5rem;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn--ghost { background: transparent; color: var(--accent); }
+.btn--wide { width: 100%; }
+.btn--sm { font-size: 0.75rem; padding: 0.25rem 0.6rem; }
+
+/* numeric measurement constraint builder — the novel filter, give it presence */
+.constraint {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 0.6rem;
+  background: var(--paper);
+}
+.constraint .row { display: grid; grid-template-columns: 5rem 1fr 2.5rem; gap: 0.35rem; }
+
+/* --- results ---------------------------------------------------------------- */
+.results { padding: 1.25rem 1.5rem 5rem; min-width: 0; }
+
+.node-strip { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.node-chip {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.7rem;
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+  background: var(--surface);
+  min-width: 8.5rem;
+}
+.node-chip .n { font-size: 1.15rem; font-weight: 600; display: block; }
+.node-chip--suppressed { border-color: var(--stop); }
+.node-chip--suppressed .n { color: var(--stop); }
+.node-chip .lbl { color: var(--ink-faint); font-size: 0.7rem; }
+
+/* suppression is a FEATURE. It gets the same visual weight as a result set,
+   never the grey of an empty state or the red of a crash. */
+.disclosure {
+  border: 1px solid var(--stop);
+  border-left: 4px solid var(--stop);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.disclosure h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  color: var(--stop);
+  font-family: var(--font-ui);
+}
+.disclosure p { margin: 0 0 0.6rem; font-size: 0.88rem; color: var(--ink-soft); }
+.disclosure .meta {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.console .data-table { font-size: 0.88rem; }
+.console .data-table td { vertical-align: top; }
+.row-main { cursor: pointer; }
+.why {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  padding: 0 0.75rem 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+.why .sig { color: var(--accent); }
+.mval { font-weight: 600; }
+
+/* cohort fitness funnel — every number labelled and real */
+.funnel { margin: 1.5rem 0; }
+.funnel-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px dotted var(--rule);
+}
+.funnel-row .bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+/* --- passport detail: slide-over ------------------------------------------- */
+.panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(620px, 94vw);
+  background: var(--surface);
+  border-left: 1px solid var(--rule);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.10);
+  overflow-y: auto;
+  padding: 1.5rem;
+  z-index: 40;
+}
+.panel[hidden] { display: none; }
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+}
+.panel-head h2 { font-family: var(--font-data); font-size: 1.05rem; margin: 0; }
+.panel h3 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.25rem;
+  margin: 1.5rem 0 0.6rem;
+}
+.kv {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.2rem 0.75rem;
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+}
+.kv dt { color: var(--ink-faint); }
+.kv dd { margin: 0; }
+
+/* a measurement must always travel with its evidence */
+.meas {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--signal);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+  background: var(--paper);
+}
+.meas .head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-family: var(--font-data);
+  font-size: 0.9rem;
+}
+.meas .val { font-size: 1.05rem; font-weight: 600; }
+.meas .snippet {
+  font-family: var(--font-prose);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-top: 0.35rem;
+  border-left: 2px solid var(--rule);
+  padding-left: 0.6rem;
+}
+.conf { font-family: var(--font-data); font-size: 0.72rem; color: var(--ink-faint); }
+
+/* the de-id manifest is EVIDENCE. Shown, never tucked behind a disclosure arrow. */
+.manifest { font-family: var(--font-data); font-size: 0.78rem; }
+.manifest ul { margin: 0.2rem 0 0.6rem; padding-left: 1.1rem; }
+.manifest li { margin: 0.1rem 0; }
+.manifest .op { color: var(--ink-faint); }
+
+.scrim {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.28);
+  z-index: 30;
+}
+.scrim[hidden] { display: none; }
+
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, 94vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  z-index: 50;
+}
+.modal[hidden] { display: none; }
+.modal h2 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+.modal .sub { color: var(--ink-faint); font-size: 0.85rem; margin: 0 0 1.25rem; }
+.actions { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.25rem; }
+
+.receipt {
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  border: 1px solid var(--signal);
+  border-left: 4px solid var(--signal);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  background: var(--paper);
+}
+.receipt .aid { font-size: 1rem; font-weight: 600; color: var(--signal); }
+
+.empty { color: var(--ink-faint); font-size: 0.9rem; padding: 2rem 0; }
+.status { font-family: var(--font-data); font-size: 0.78rem; color: var(--ink-faint); }
+
+@media (max-width: 900px) {
+  .console { grid-template-columns: 1fr; }
+  .rail { position: static; max-height: none; border-right: none;
+          border-bottom: 1px solid var(--rule); }
+}
