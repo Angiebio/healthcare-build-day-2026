@@ -61,7 +61,8 @@ def test_actual_two_query_attack_is_bucketed() -> None:
 
     assert verdict.risk == "differencing_suspected"
     assert verdict.action == "bucket"
-    assert "isolates 1 record" in verdict.reason
+    assert "fewer than k=10 records" in verdict.reason
+    assert "isolates 1 record" not in verdict.reason
     assert verdict.related_query_fingerprint == fingerprint(broad)
 
 
@@ -142,4 +143,5 @@ def test_locked_ladder_real_exploit_pair_is_bucketed() -> None:
     )
     assert verdict.risk == "differencing_suspected"
     assert verdict.action == "bucket"
-    assert "isolates 9 record" in verdict.reason
+    assert "fewer than k=10 records" in verdict.reason
+    assert "isolates 9 record" not in verdict.reason

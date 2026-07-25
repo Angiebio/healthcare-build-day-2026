@@ -229,7 +229,8 @@ def test_live_beat_4_verified_differencing_pair_is_bucketed() -> None:
     }
     assert guard_by_node["BCH"]["risk"] == "differencing_suspected"
     assert guard_by_node["BCH"]["action"] == "bucket"
-    assert "isolates 9 record" in guard_by_node["BCH"]["reason"]
+    assert "fewer than k=10 records" in guard_by_node["BCH"]["reason"]
+    assert "isolates 9 record" not in guard_by_node["BCH"]["reason"]
     assert disclosure_by_node["BCH"]["k_anon_ok"] is True
     assert disclosure_by_node["BCH"]["guard_action"] == "bucket"
     assert disclosure_by_node["BCH"]["approximate_count"] == "26-50"

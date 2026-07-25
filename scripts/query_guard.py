@@ -135,13 +135,12 @@ def assess_disclosure_risk(
                 )
             )
             nearest = risky[0]
-            delta = abs(nearest.result_count - current_count)
             return RiskVerdict(
                 risk="differencing_suspected",
                 action="bucket",
                 reason=(
-                    f"Exact count withheld: a one-constraint query pair isolates "
-                    f"{delta} record(s), below k={k}."
+                    "Exact count withheld: a one-constraint query pair isolates "
+                    f"fewer than k={k} records."
                 ),
                 related_query_fingerprint=nearest.query_fingerprint,
             )
