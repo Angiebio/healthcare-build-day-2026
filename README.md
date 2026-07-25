@@ -115,8 +115,15 @@ role, so what a person sees is determined by who they are rather than by what th
   (`report_extraction` with confidence and snippet, or `curated`). A model guess never wears a
   clinical fact's clothes.
 
-**Not implemented, and deliberately not claimed:** no LLM is in the request path (natural-language
-input is *validated*, never interpreted, see `scripts/query_ast.py`); no image embeddings, no
+**Where the model is, and is not.** No model participates in search or in deciding what is
+released: natural-language input is *validated* against a closed vocabulary, never interpreted
+(see `scripts/query_ast.py`). **Scout**, the cohort narrator, runs locally and sits strictly
+downstream of every disclosure decision. It receives a whitelist of already-disclosed aggregates,
+built positively field by field, so it never sees a passport, a report snippet, a study identifier,
+an age, a sex, or a withheld hospital's count. The interface shows the user the exact payload it
+was given. `tests/test_scout.py` attacks that claim with a hostile input and asserts nothing leaks.
+
+**Not implemented, and deliberately not claimed:** no image embeddings, no
 acquisition-parameter indexing, and no similarity search, because the supplied corpus contains no
 pixel data or acquisition fields; approval returns a **simulated retrieval grant**, not a live
 retrieval endpoint.

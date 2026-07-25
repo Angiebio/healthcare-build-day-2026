@@ -1023,7 +1023,10 @@ function renderSummary(res) {
     '<div class="summary">'
     + '<div class="summary-head"><h3>Cohort summary '
     + '<span class="status">' + results.length + ' studies returned</span></h3>'
-    + '<button class="btn btn--petition btn--sm" id="csv-export">Download cohort CSV</button></div>'
+    + '<button class="btn btn--sm" id="scout-ask" title="' + SCOUT_COPY.tooltip + '">'
+  + '◈ ' + SCOUT_COPY.idle + '</button>'
++ '<button class="btn btn--petition btn--sm" id="csv-export">Download cohort CSV</button></div>'
++ '<div class="scout" id="scout-panel" hidden></div>'
     + '<div class="summary-grid">'
     + '<figure class="chart-fig"><figcaption>Studies by hospital</figcaption>'
     + barChart(rows, 'Number of matching studies at each hospital')
@@ -1049,6 +1052,16 @@ function renderSummary(res) {
   host.hidden = false;
   const btn = $('csv-export');
   if (btn) btn.onclick = function () { exportCsv(results); };
+  const ask = $('scout-ask');
+  if (ask) ask.onclick = function () {
+    const concepts = [];
+    results.forEach(function (r) {
+      (r.passport.concepts || []).forEach(function (c) {
+        if (c.display && concepts.indexOf(c.display) === -1) concepts.push(c.display);
+      });
+    });
+    askScout(res, stats, concepts.slice(0, 8));
+  };
 }
 
 function exportCsv(results) {
@@ -1081,4 +1094,90 @@ function exportCsv(results) {
   a.download = 'lantern-cohort.csv';
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+/* ===========================================================================
+   Scout, in the interface.
+
+   A button beside the CSV export, not a chat. The showy part is not that a
+   model wrote a paragraph; it is the panel underneath showing the complete
+   JSON it was given, which is three hospital names, some counts, and a
+   concept label. Nothing else was available to it.
+   =========================================================================== */
+
+const SCOUT_COPY = {
+  idle:     'Ask Scout',
+  working:  'Scout is reading the numbers',
+  slow:     'Still reading. Scout is a small model and is doing its best.',
+  offline:  'Scout is offline. This summary is the deterministic one. Same numbers, fewer adjectives.',
+  worldview:'Everything Scout could see',
+  tooltip:  'Scout has never seen a patient record and intends to keep it that way.',
+  noPapers: 'Nothing cached for that one. Either the finding is novel or the wifi is.',
+  footer:   'Scout is a localizer, not a diagnosis. Clinical correlation is recommended.',
+};
+
+async function askScout(res, stats, concepts) {
+  const host = $('scout-panel');
+  if (!host) return;
+  host.hidden = false;
+  host.innerHTML = '<div class="scout-body"><p class="scout-status">'
+    + esc(SCOUT_COPY.working) + '<span class="scout-dots"></span></p></div>';
+
+  const slow = setTimeout(function () {
+    const s = host.querySelector('.scout-status');
+    if (s) s.textContent = SCOUT_COPY.slow;
+  }, 6000);
+
+  const nodes = (res.nodes_queried || []).map(function (n) {
+    return (typeof n === 'string') ? { node: n, k_anon_ok: true, records_returned: 0 } : n;
+  });
+  // The interface counts what it actually received per node, so a withheld
+  // hospital contributes nothing rather than a zero that looks like a fact.
+  const perNode = {};
+  (res.results || []).forEach(function (r) { perNode[r.node] = (perNode[r.node] || 0) + 1; });
+  nodes.forEach(function (n) { if (n.k_anon_ok !== false) n.records_returned = perNode[n.node] || 0; });
+
+  let data;
+  try {
+    const r = await fetch('/scout/brief', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: ($('nl') && $('nl').value) || 'the current cohort',
+        nodes: nodes, stats: stats, concepts: concepts,
+      }),
+    });
+    if (!r.ok) throw new Error('scout unavailable');
+    data = await r.json();
+  } catch (e) {
+    clearTimeout(slow);
+    host.innerHTML = '<div class="scout-body"><p class="scout-status">'
+      + esc(SCOUT_COPY.offline) + '</p></div>';
+    return;
+  }
+  clearTimeout(slow);
+
+  const papers = (data.literature || []).map(function (p) {
+    return '<li><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.title)
+      + '</a><span class="scout-cite">' + esc(p.first_author) + ' · ' + esc(p.journal)
+      + ' · ' + esc(p.year) + '</span></li>';
+  }).join('');
+
+  const deterministic = /deterministic/.test(data.source || '');
+
+  host.innerHTML =
+    '<div class="scout-body">'
+    + '<p class="scout-brief">' + esc(data.brief) + '</p>'
+    + '<p class="scout-source">' + (deterministic ? esc(SCOUT_COPY.offline)
+        : 'Narrated by ' + esc(data.source) + ', running on this machine.') + '</p>'
+    + (papers
+        ? '<h4>Related published work</h4><ul class="scout-papers">' + papers + '</ul>'
+        : '<p class="scout-source">' + esc(SCOUT_COPY.noPapers) + '</p>')
+    + '<details class="scout-worldview"><summary>' + esc(SCOUT_COPY.worldview) + '</summary>'
+    + '<pre>' + esc(JSON.stringify(data.payload_shown_to_model, null, 2)) + '</pre>'
+    + '<p class="scout-source">No passport, no report text, no study identifier, no age, no sex, '
+    + 'and no withheld hospital’s count. Scout sits downstream of every disclosure '
+    + 'decision and cannot widen one.</p></details>'
+    + '<p class="scout-footer">' + esc(data.disclaimer || SCOUT_COPY.footer) + '</p>'
+    + '</div>';
 }

@@ -34,6 +34,7 @@ from scripts.rank_fusion import fuse  # noqa: E402
 from scripts.query_guard import QueryRecord, assess_disclosure_risk  # noqa: E402
 from app.policy import redact_for_layer, role_to_layer  # noqa: E402
 from app import audit  # noqa: E402
+from app import scout as scout_mod  # noqa: E402
 
 K_THRESHOLD = 10
 NODES = {
@@ -366,6 +367,34 @@ async def nodes() -> dict[str, Any]:
                 return {"node": node, "reachable": False, "error": type(exc).__name__}
         out = await asyncio.gather(*[_probe(n, u) for n, u in NODES.items()])
     return {"nodes": list(out), "k_anon_threshold": K_THRESHOLD}
+
+
+
+class ScoutBody(BaseModel):
+    query: str = ""
+    nodes: list[dict[str, Any]] = []
+    stats: list[dict[str, Any]] = []
+    concepts: list[str] = []
+
+
+@app.post("/scout/brief")
+def scout_brief(body: ScoutBody) -> dict[str, Any]:
+    """Narrate a cohort from disclosed aggregates only.
+
+    Scout sits downstream of every disclosure decision. The payload it receives
+    is built positively from a whitelist, so it cannot contain a record, and the
+    exact payload is returned to the caller so the interface can show the user
+    precisely what the model was given.
+    """
+    payload = scout_mod.build_payload(body.query, body.nodes, body.stats, body.concepts)
+    text, source = scout_mod.model_brief(payload)
+    return {
+        "brief": text,
+        "source": source,
+        "payload_shown_to_model": payload,
+        "literature": scout_mod.literature(body.concepts),
+        "disclaimer": "Scout is a localizer, not a diagnosis. Clinical correlation is recommended.",
+    }
 
 
 @app.get("/health")
