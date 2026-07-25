@@ -81,7 +81,7 @@ way a researcher actually needs it answered.
 > Paste: `Read "25JUL2026 healthcare build day/planning files/roadmaps/04-computational-supplement.md" section T-11b. It extends your T-11 ticket. Keep going, don't restart.`
 
 Same rules as T-11 (pure functions, deterministic, stdlib+pydantic+numpy, tests, fail loud).
-**Priority: finish T-11 modules 1–3 first. These are additive, in this order:**
+**Correction v2: `query_guard.py` is promoted to P1 and must be green before funnel/MMR.**
 
 **6. `scripts/query_guard.py` — differencing-attack defense** (do this one; it's the sophistication win)
 ```python

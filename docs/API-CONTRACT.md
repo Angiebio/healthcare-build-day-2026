@@ -3,6 +3,12 @@
 > Frontend builds against this immediately and does not wait for the backend to exist.
 > Every endpoint returns JSON. Every list endpoint is explainable. Every denial is legible.
 
+> **⚠️ AMENDED 25JUL post-red-team — see `07-CORRECTIONS-v2.md`.** The compiler now runs in a
+> **node-side sidecar** (:8011/8012/8013), not in the broker. The broker federates over sidecars only
+> and must have no import or route reaching raw `/api/studies`. `PATCH /petition/{id}` is replaced by
+> **`POST /petition/{id}/decision`** (append-only semantics). Approval must issue a **node-issued,
+> time-limited retrieval** — routing alone doesn't satisfy the challenge's requirement #4.
+
 ## Upstream (given, do not modify) — the 3 hospital nodes
 `GET http://localhost:{8001|8002|8003}/api/studies` · `/api/studies/{study_id}` · `/health`
 Nodes are dumb, unauthenticated, and leak PII **on purpose**. Ours is the layer that fixes that.
@@ -13,8 +19,9 @@ Node map: `8001=BCH (pediatric)`, `8002=MGH (adult)`, `8003=BWH (adult)`.
 ```http
 POST /search
   body: { text?: str, filters?: {...}, role: "researcher"|"clinician"|"patient", page?, page_size? }
-  → { query_ast, results: [PassportSummary], disclosure: Disclosure, nodes_queried: [...],
-      timing_ms, total_before_suppression }
+  → { query_ast, results: [PassportSummary], disclosure: Disclosure, nodes_queried: [...], timing_ms }
+  ⚠️ `total_before_suppression` REMOVED (25JUL, red team). Returning an exact pre-suppression count
+  alongside a suppressed cohort defeats k-anonymity. When suppression fires, return ONLY the bucket.
   Each result carries `why`: {signals_fired, reason_text, measurements_matched}
 
 GET  /passport/{node}/{study_id}

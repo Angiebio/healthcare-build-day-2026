@@ -78,7 +78,8 @@ def compile_query(nl_text: str | None, filters: dict) -> QueryAST   # validated,
 `QueryAST` is a **Pydantic model** — this is the security boundary between "what a user (or an LLM)
 asked for" and "what the system will actually execute." Shape:
 ```python
-population: {stages: [...], age_min_years, age_max_years, sex}
+population: {basis: "chronological"|"gestational", stages: [...], age_min_years,
+             age_max_years, gestational_age_min_weeks, gestational_age_max_weeks, sex}
 imaging:    {modality: [...], body_site: [...], }
 clinical:   {concepts: [SNOMED/HPO codes], text_terms: [...], expand_ontology: bool}
 numeric:    [{quantity: <from the closed vocab>, op: "lt"|"lte"|"gt"|"gte"|"between", value|range, unit}]
@@ -91,7 +92,8 @@ Rules that are non-negotiable:
 - Provide `compile_query(nl_text=None, filters={...})` working *without* any LLM — the filter UI path
   must be fully functional when the model is unavailable. That's our fallback in the demo.
 - Export a `GOLDEN_QUERY` constant that encodes:
-  *"pediatric brain MR, lateral ventricular atrial width > 10 mm, under 8 years"* — the demo hero query.
+  *"fetal MR, lateral ventricular atrial width > 10 mm"* — the corrected demo hero query. Fetal
+  `PatientAge` is maternal age, so the population basis is gestational and age comes from the report.
 
 ### 4. `rank_fusion.py`
 ```python

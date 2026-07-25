@@ -15,12 +15,12 @@ today.** Do not spend a minute on radiomics, defacing, or burned-in-OCR against 
 
 What we found instead is better, and it's ours because we actually profiled the data:
 
-> **76% of the reports contain quantitative clinical measurements locked in prose.**
-> 531 mm-values, 434 percentages, 541 gestational weeks, 112 cm, 95 mL — across 900 BCH studies.
+> **78.4% of reports network-wide contain quantitative clinical measurements locked in prose.**
+> The earlier 76% figure was BCH-only; brain-only extraction is lower.
 > Ventricular atrial widths. Ejection fractions. Lesion dimensions. Gestational age.
 
-Today a researcher can search *"brain MRI, pediatric."* They **cannot** search
-*"lateral ventricular atrial width > 10 mm in children under 8 with thin-slice MR."*
+Today a researcher can search *"fetal MRI."* They **cannot** search
+*"fetal MR with lateral ventricular atrial width > 10 mm."*
 The number exists. A radiologist measured it. It's sitting in sentence three of a paragraph — which
 means it is simultaneously **invisible to search** and **radioactive to share** (free text is the PHI
 landmine). Every hospital is in this bind.
@@ -115,13 +115,14 @@ the only two roads and we drove neither in five hours. Say the accurate thing; i
 
 ## 4. The four demo beats (build backward from these)
 
-1. **The impossible query.** *"Pediatric brain MR, ventricular atrial width over 10 mm, under 8 years."*
-   Returns real hits across BCH+MGH+BWH. **This query cannot be run on any system in that room today.**
-2. **Explain the match.** Open a result: matched on SNOMED brain + age band 5-9 + **measured 12.4 mm
-   (extracted from report, provenance: report_extraction, confidence shown)** + FLAIR synonym.
-   Each fact says where it came from. A model guess never masquerades as a clinical fact.
-3. **Privacy holds under pressure.** Narrow to a rare finding → cohort drops below k → results
-   **suppress to counts + petition pathway**, and the Passport shows exactly what was stripped.
+1. **Answer the stated ask.** *"Pediatric brain tumor"* expands across local tumor/neoplasm/glioma
+   language. Show the semantic mapping before the numeric differentiator.
+2. **The impossible query.** *"Fetal MR with ventricular atrial width over 10 mm."* Open BCH FT-4105:
+   **14.1 mm left / 13.8 mm right**, both extracted with provenance and confidence. Population basis
+   is gestational; maternal `PatientAge` is never mislabeled as fetal age.
+3. **Privacy holds under pressure.** Narrow to severe >15 mm → BCH 7, MGH 6, BWH 3 → every node
+   **suppresses to a bucket + petition pathway**. A near-duplicate query isolating <k records is also
+   caught by the per-session differencing guard.
 4. **Governed access.** Petition → routes to owning hospital → owner approves in their view → audit
    entry appears, append-only. *"We never held the pixels. We brokered the request."*
 
