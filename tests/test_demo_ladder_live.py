@@ -219,10 +219,31 @@ def test_live_beat_4_verified_differencing_pair_is_bucketed() -> None:
     assert narrow["query_ast"]["population"]["gestational_age_max_weeks"] == 31.0
     assert narrow["guard"]["risk"] == "differencing_suspected"
     assert narrow["guard"]["action"] == "bucket"
-    assert narrow["results"] == []
     assert narrow["disclosure"]["records_withheld"] is True
+
+    guard_by_node = {
+        row["node"]: row for row in narrow["guard"]["per_node"]
+    }
+    disclosure_by_node = {
+        row["node"]: row for row in narrow["disclosure"]["per_node"]
+    }
+    assert guard_by_node["BCH"]["risk"] == "differencing_suspected"
+    assert guard_by_node["BCH"]["action"] == "bucket"
+    assert "isolates 9 record" in guard_by_node["BCH"]["reason"]
+    assert disclosure_by_node["BCH"]["k_anon_ok"] is True
+    assert disclosure_by_node["BCH"]["guard_action"] == "bucket"
+    assert disclosure_by_node["BCH"]["approximate_count"] == "26-50"
+    assert "records_returned" not in disclosure_by_node["BCH"]
+    assert all(row["node"] != "BCH" for row in narrow["results"])
+
+    # The same pair happens to isolate four records at each adult node in the
+    # locked corpus. Per-node accounting catches those independently as well.
+    assert {
+        node: guard_by_node[node]["action"] for node in NODE_URLS
+    } == {"BCH": "bucket", "MGH": "bucket", "BWH": "bucket"}
+    assert narrow["results"] == []
     assert all(
-        not isinstance(row["approximate_count"], int)
-        for row in narrow["disclosure"]["per_node"]
-        if row["k_anon_ok"]
+        "records_returned" not in row
+        and not isinstance(row["approximate_count"], int)
+        for row in disclosure_by_node.values()
     )

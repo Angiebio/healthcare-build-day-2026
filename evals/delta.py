@@ -244,8 +244,8 @@ def render_results() -> str:
             "",
             "## Reproduce offline",
             "",
-            "```powershell",
-            r"C:\Users\ajohn\venvs\hack25\Scripts\python.exe -B evals\delta.py",
+            "```bash",
+            r"python -B evals\delta.py",
             "```",
             "",
         ]

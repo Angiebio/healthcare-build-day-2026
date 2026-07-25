@@ -26,7 +26,8 @@ def test_fetal_fixture_uses_report_gestation_not_maternal_patient_age() -> None:
     assert passport["population"]["pediatric_stage"] == "fetal"
     assert passport["population"]["public_age_band"] == "fetal"
     assert "age_years" not in passport["population"]
-    assert "PatientAge→gestational weeks (from report)" in (
+    assert "PatientAge" in passport["deid_manifest"]["removed"]
+    assert "Diagnosis gestational age→gestational weeks" in (
         passport["deid_manifest"]["generalized"]
     )
 

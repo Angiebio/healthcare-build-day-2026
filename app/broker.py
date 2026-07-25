@@ -56,8 +56,10 @@ def _bucket(n: int) -> str:
         return "51-100"
     return "100+"
 
-# In-memory demo state. The AUDIT (append-only file) is the source of truth; these are views.
-_SESSIONS: dict[str, list[QueryRecord]] = {}
+# In-memory demo state. Query history is partitioned by node because disclosure
+# risk belongs to a hospital cohort, not to the network-wide sum that can mask it.
+# The AUDIT (append-only file) is the source of truth; these are views.
+_SESSIONS: dict[str, dict[str, list[QueryRecord]]] = {}
 _PETITIONS: dict[str, dict[str, Any]] = {}
 
 app = FastAPI(title="Lantern Broker", version="0.1.0")
@@ -123,15 +125,32 @@ async def search(body: SearchBody) -> dict[str, Any]:
             merged.append(m)
             total_returned += 1
 
-    # 4) Differencing defense (per session). Stage the count the broker can actually see.
-    known_total = sum(nr["candidate_count"] for nr in node_results if nr.get("candidate_count"))
-    session_log = _SESSIONS.setdefault(body.session, [])
-    # ORDER IS LOAD-BEARING, and it is stage-then-assess by design: the guard
-    # reads the current query's own pre-disclosure count from its staged record
-    # (see scripts/query_guard.assess_disclosure_risk). Do not "fix" this to
-    # assess-then-append -- that starves the guard of the count it subtracts.
-    session_log.append(QueryRecord(ast=ast, result_count=known_total))
-    verdict = assess_disclosure_risk(ast, session_log, k=K_THRESHOLD)
+    # 4) Differencing defense (per session AND per node). A safe network delta
+    # can hide an unsafe hospital delta, so each node gets an independent ledger.
+    node_logs = _SESSIONS.setdefault(body.session, {})
+    node_guards: dict[str, dict[str, object]] = {}
+    for nr in node_results:
+        node = nr["node"]
+        candidate_count = nr.get("candidate_count")
+        if isinstance(candidate_count, int) and not isinstance(candidate_count, bool):
+            session_log = node_logs.setdefault(node, [])
+            # ORDER IS LOAD-BEARING, and it is stage-then-assess by design: the guard
+            # reads the current query's own pre-disclosure count from its staged record
+            # (see scripts/query_guard.assess_disclosure_risk). Do not "fix" this to
+            # assess-then-append -- that starves the guard of the count it subtracts.
+            session_log.append(QueryRecord(ast=ast, result_count=candidate_count))
+            node_guards[node] = assess_disclosure_risk(
+                ast, session_log, k=K_THRESHOLD
+            ).to_dict()
+        else:
+            # No exact count crossed the node boundary, so there is nothing new
+            # for subtraction. Existing node-side suppression remains in force.
+            node_guards[node] = {
+                "risk": "none",
+                "action": "allow",
+                "reason": "No exact node count was released for guard assessment.",
+                "related_query_fingerprint": None,
+            }
 
     # 5) Fuse ranks across nodes (RRF over independent signals), then keep our richer `why`.
     by_id = {m["passport"]["passport_id"]: m for m in merged}
@@ -152,21 +171,60 @@ async def search(body: SearchBody) -> dict[str, Any]:
             "why": m["why"],
         })
 
-    # 7) If the guard tripped, degrade precision (bucket) or withhold (suppress) — fail toward privacy.
-    #    Both actions refuse the isolating cohort AND coarsen every exact count, so an attacker
-    #    cannot subtract their way to a small group. This is the "watch it refuse" beat.
-    guard = verdict.to_dict()
-    if verdict.action in ("suppress", "bucket"):
-        results = []
-        for pn in per_node:
+    # 7) Degrade only the hospital responses whose own ledger tripped. Safe
+    #    hospitals can still return records; guarded hospitals expose only bands.
+    guarded_nodes = {
+        node
+        for node, node_guard in node_guards.items()
+        if node_guard["action"] in ("suppress", "bucket")
+    }
+    if guarded_nodes:
+        results = [row for row in results if row["node"] not in guarded_nodes]
+    for pn in per_node:
+        node_action = str(node_guards[pn["node"]]["action"])
+        pn["guard_action"] = node_action
+        if pn["node"] in guarded_nodes:
+            exact_count = pn.pop("records_returned")
             if pn.get("k_anon_ok"):
-                pn["approximate_count"] = _bucket(pn["records_returned"])
+                pn["approximate_count"] = _bucket(exact_count)
+
+    guard_actions = {str(item["action"]) for item in node_guards.values()}
+    guard_action = (
+        "suppress" if "suppress" in guard_actions
+        else "bucket" if "bucket" in guard_actions
+        else "allow"
+    )
+    risky_nodes = sorted(guarded_nodes)
+    risky_guards = [node_guards[node] for node in risky_nodes]
+    guard = {
+        "risk": "differencing_suspected" if risky_nodes else "none",
+        "action": guard_action,
+        "reason": (
+            "Per-node disclosure guard engaged at "
+            + ", ".join(risky_nodes)
+            + "; exact node counts and records were withheld."
+            if risky_nodes
+            else "No node ledger contains a query pair that isolates a cohort below k."
+        ),
+        "related_query_fingerprint": next(
+            (
+                item["related_query_fingerprint"]
+                for item in risky_guards
+                if item.get("related_query_fingerprint")
+            ),
+            None,
+        ),
+        "per_node": [
+            {"node": node, **node_guard}
+            for node, node_guard in sorted(node_guards.items())
+        ],
+    }
     total_page = len(results)
     start = max(0, (body.page - 1) * body.page_size)
     page_results = results[start:start + body.page_size]
 
-    if verdict.action != "allow":
-        reason = verdict.reason
+    if guard_action != "allow":
+        reason = str(guard["reason"])
     elif any_suppressed:
         reason = ("one or more nodes hold a cohort below k; those records are withheld "
                   "node-side and a governed petition path is offered instead")
@@ -174,14 +232,14 @@ async def search(body: SearchBody) -> dict[str, Any]:
         reason = "cohort clears k at every returning node"
     disclosure = {
         "threshold": K_THRESHOLD,
-        "k_anon_ok": total_returned > 0 and verdict.action == "allow",
-        "records_withheld": any_suppressed or verdict.action != "allow",
+        "k_anon_ok": total_returned > 0,
+        "records_withheld": any_suppressed or bool(guarded_nodes),
         "petition_route": "/petition",
         "reason": reason,
         "per_node": per_node,
         # Deliberately NO summed exact count when anything is suppressed/bucketed:
         # revealing it would defeat k-anon by subtraction. [SECFIX 25JUL Flame1]
-        "returned_count": total_page if verdict.action == "allow" else f"<{K_THRESHOLD} (guarded)",
+        "returned_count": total_page if not guarded_nodes else "bucketed (guarded)",
     }
 
     return {

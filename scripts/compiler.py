@@ -54,6 +54,7 @@ REMOVED: Final[tuple[str, ...]] = (
     "PatientID",
     "PatientBirthDate",
     "InstitutionName",
+    "StudyDate",
 )
 
 _TERMINOLOGY: Final[CuratedTerminology] = CuratedTerminology()
@@ -113,8 +114,13 @@ def compile_passport(node: str, rec: Mapping[str, Any]) -> dict[str, Any]:
 
     quantities = sorted({str(measurement["quantity"]) for measurement in measurements})
     removed = [field for field in REMOVED if rec.get(field)]
+    if body == "FETAL" and rec.get("PatientAge"):
+        # The corpus field is maternal age, not fetal age. It is discarded;
+        # gestational age is independently extracted from the report.
+        removed.append("PatientAge")
     body_site = _body_site_concept(body)
     concepts = _report_concepts(report)
+    pseudonym_source = str(rec.get("StudyInstanceUID") or rec.get("StudyID"))
 
     candidate = {
         "passport_id": f"{node.lower()}:{rec.get('StudyID')}",
@@ -152,13 +158,19 @@ def compile_passport(node: str, rec: Mapping[str, Any]) -> dict[str, Any]:
         "deid_manifest": {
             "removed": removed,
             "generalized": (
-                ["PatientAge→gestational weeks (from report)", "StudyDate→shifted"]
+                ["Diagnosis gestational age→gestational weeks"]
                 if population["basis"] == "gestational"
-                else ["PatientAge→band", "StudyDate→shifted"]
+                else (["PatientAge→band"] if rec.get("PatientAge") else [])
             ),
-            "hashed": ["StudyInstanceUID→pseudonym"],
+            "hashed": [
+                (
+                    "StudyInstanceUID→pseudonym"
+                    if rec.get("StudyInstanceUID")
+                    else "StudyID→pseudonym"
+                )
+            ],
             "prose_withheld": True,
-            "pseudonym": pseudonym(node, str(rec.get("StudyID"))),
+            "pseudonym": pseudonym(node, pseudonym_source),
         },
         "provenance": {
             "pipeline_version": "0.2.0-compiler",
