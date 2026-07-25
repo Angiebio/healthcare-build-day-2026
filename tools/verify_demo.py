@@ -16,7 +16,6 @@ import uuid
 import httpx
 
 BASE = "http://localhost:8000"
-SESSION = "verify_" + uuid.uuid4().hex[:8]  # fresh session so the guard baseline is clean each run
 _PASS, _FAIL = [], []
 
 
@@ -25,7 +24,11 @@ def check(name: str, ok: bool, detail: str = "") -> None:
     print(f"  {'PASS' if ok else 'FAIL'}  {name}" + (f"  — {detail}" if detail and not ok else f"  — {detail}" if detail else ""))
 
 
-def search(filters: dict, role: str = "researcher", session: str = SESSION, page_size: int = 5) -> dict:
+def search(filters: dict, role: str = "researcher", session: str | None = None, page_size: int = 5) -> dict:
+    # Each beat gets its OWN session by default, so a prior beat's query is never mistaken for a
+    # differencing partner. Only the differencing test deliberately shares a session.
+    if session is None:
+        session = "v_" + uuid.uuid4().hex[:8]
     r = httpx.post(f"{BASE}/search",
                    json={"role": role, "filters": filters, "session": session, "page_size": page_size},
                    timeout=20)

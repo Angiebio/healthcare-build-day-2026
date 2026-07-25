@@ -77,18 +77,22 @@ entry. The hospital remains the enforcement point.
 ## Run it
 
 ```bash
-# 1. hospital nodes (provided boilerplate: github.com/snellutla-rh/provider-node)
-HOSPITAL_NODE=BCH uvicorn main:app --port 8001
-HOSPITAL_NODE=MGH uvicorn main:app --port 8002
-HOSPITAL_NODE=BWH uvicorn main:app --port 8003
-
-# 2. Lantern
 pip install -r requirements.txt
-uvicorn app.main:app --port 8000     # UI + API at http://localhost:8000
 
-# tests
+# One command brings up the whole stack: three node sidecars + the broker.
+# Each sidecar compiles its hospital's studies from the provided synthetic corpus
+# node-side (the trust boundary) and exposes only de-identified passports; the broker
+# federates over them and serves the researcher console.
+python -m app.run_all            # console + API at http://localhost:8000
+
+# In another terminal — a judge can watch every demo claim verify against the live API:
+python tools/verify_demo.py
+
 pytest -q
 ```
+
+**Exact request body for every demo beat (and the three reasons a search might 422):**
+see [`docs/API-EXAMPLES.md`](docs/API-EXAMPLES.md).
 
 ## Layout
 
