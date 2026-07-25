@@ -209,46 +209,45 @@ main { padding: 2.5rem 1.5rem 5rem; }
 
 /* --- process-flow strip: hospital -> passport -> Lantern -> researcher/family */
 .flow-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.25rem;
-  margin: 1.5rem 0 2.5rem;
-  padding: 1.5rem 1rem;
-  background: var(--surface);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem 0.5rem;
+  align-items: start;
+  padding: 1.75rem 1.25rem;
   border: 1px solid var(--rule);
-  border-radius: var(--radius);
+  background: var(--surface-alt);
+  margin: 1.75rem 0;
 }
 .flow-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 6.5rem;
+  position: relative;
   text-align: center;
+  padding: 0 0.6rem;
 }
 .flow-node img {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  margin-bottom: 0.4rem;
+  width: 52px;
+  height: 52px;
+  display: block;
+  margin: 0 auto 0.6rem;
 }
 .flow-node span {
   font-size: 0.72rem;
   color: var(--ink-soft);
   line-height: 1.25;
 }
-.flow-node--center img { width: 56px; height: 56px; }
+.flow-node--center img { width: 62px; height: 62px; }
 .flow-node--center span { color: var(--ink); font-weight: 600; }
-.flow-node:not(:last-child)::after {
+.flow-node:not(:nth-child(3n))::after {
   content: "→";
-  color: var(--accent);
-  font-size: 1.1rem;
-  margin: 0 0.5rem 1.4rem;
+  position: absolute;
+  right: -0.35rem;
+  top: 22px;
+  color: var(--orange);
+  font-size: 1.05rem;
+  line-height: 1;
 }
 @media (max-width: 640px) {
-  .flow-node:not(:last-child)::after { content: "↓"; margin: 0.2rem 0; }
-  .flow-row { flex-direction: column; }
+  .flow-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow-node:not(:nth-child(3n))::after { content: none; }
 }
 
 /* A pulled-out claim. Squared panel with a full border and a navy rule above,

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Researcher search">
+  <style>.s{fill:none;stroke:#22305c;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}.a{fill:none;stroke:#f7921e;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.f{fill:#22305c}.o{fill:#f7921e}@media(prefers-color-scheme:dark){.s{stroke:#c3d4f7}.f{fill:#c3d4f7}}</style>
+  <circle class="s" cx="28" cy="28" r="14"/><path class="s" d="M38.5 38.5L52 52"/><path class="a" d="M22 30l4 4 8-9"/>
+</svg>

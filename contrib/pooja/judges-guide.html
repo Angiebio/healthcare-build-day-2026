@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Judges guide · Lantern</title>
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <meta name="theme-color" content="#22305c">
+  <link rel="stylesheet" href="lantern.css">
+  <style>
+    /* Page-local: the Q&A table and code block are unique to this page. */
+    table.qa { width:100%; border-collapse:collapse; margin:1.5rem 0; }
+    table.qa th { text-align:left; padding:.55rem .8rem; border-bottom:2px solid rgba(34,48,92,.4); }
+    table.qa td { padding:.7rem .8rem; border-bottom:1px solid rgba(34,48,92,.16); vertical-align:top; }
+    table.qa td:first-child { font-weight:600; width:34%; }
+    .prose pre { background:rgba(34,48,92,.06); border:1px solid rgba(34,48,92,.16);
+      border-radius:6px; padding:.9rem 1.1rem; overflow-x:auto; }
+    .prose pre code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88rem; }
+    @media (prefers-color-scheme: dark) {
+      table.qa th { border-bottom-color:rgba(200,210,240,.4); }
+      table.qa td { border-bottom-color:rgba(200,210,240,.16); }
+      .prose pre { background:rgba(200,210,240,.07); border-color:rgba(200,210,240,.18); }
+    }
+  </style>
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark lockup" href="/"><img class="mark" src="assets/brand/lantern-icon.png" alt=""><img class="wordmark-svg" src="assets/brand/lantern-wordmark.svg" alt="Lantern"></a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="/">Search console</a>
+    <span class="menu"><button type="button" aria-haspopup="true">About</button>
+      <ul>
+        <li><a href="about.html">About Lantern<small>The problem, the approach, the team</small></a></li>
+        <li><a href="judges-guide.html" aria-current="page">Judges guide<small>Why it's innovative, and how to verify it</small></a></li>
+      </ul>
+    </span>
+    <span class="menu"><button type="button" aria-haspopup="true">Who it serves</button>
+      <ul>
+        <li><a href="for-researchers.html">For computational researchers<small>Queryable measurements, cohort discovery</small></a></li>
+        <li><a href="for-physicians.html">For physicians<small>Comparable cases, routed requests</small></a></li>
+        <li><a href="for-patients.html">For patients and families<small>Plain language, and your own images</small></a></li>
+      </ul>
+    </span>
+    <a href="how-it-works.html">How it works</a>
+    <a href="science.html">Scientific choices</a>
+    <a href="privacy.html">Privacy</a>
+  </nav>
+</header>
+
+<main>
+<article class="prose">
+
+  <h1>Judges guide</h1>
+  <p class="standfirst">The two-minute version of what makes Lantern different, the honest edges of
+  what we built in five hours, and a single command you can run to watch every claim on this page
+  verify itself.</p>
+
+  <h2>Why this is innovative</h2>
+
+  <p>Most teams answering "make imaging discoverable across hospitals" build a smarter search box over
+  the fields that already exist: modality, body part, a diagnosis string. Lantern does something no
+  catalogue in that room can do today.</p>
+
+  <div class="who-grid">
+    <div class="who-card">
+      <p><strong>1 · A new queryable axis, compiled out of prose.</strong> 78.4% of the reports carry
+      quantitative measurements written into sentences — atrial widths, ejection fractions, gestational
+      age. A radiologist already measured them; they were simply invisible to search and unsafe to share.
+      We compile them into typed, searchable facts <em>inside the hospital boundary</em>. You can now ask
+      <em>"fetal MR, lateral ventricular atrial width &gt; 10 mm"</em> — a query that returns real cohorts
+      and that exists nowhere else.</p>
+    </div>
+    <div class="who-card">
+      <p><strong>2 · Utility up, exposure down — not a trade.</strong> The compiler ships <em>less</em>
+      free text than a hospital does today (none) while surfacing <em>more</em> usable signal. Privacy
+      and utility usually pull against each other; here the compilation happens before anything leaves,
+      so both move the same direction.</p>
+    </div>
+    <div class="who-card">
+      <p><strong>3 · The disclosure boundary is the hospital, not a central index.</strong> k-anonymity
+      is enforced <em>per node</em>: sixteen severe cases exist across the network — enough to clear the
+      threshold together — but no single hospital's sub-ten cohort is ever exposed. That is what makes
+      this a federation and not a warehouse with a login.</p>
+    </div>
+    <div class="who-card">
+      <p><strong>4 · Every fact shows its work.</strong> Each measurement carries its confidence and the
+      exact clause it was read from, stamped <code>report_extraction</code>. A model's guess never gets to
+      wear a clinical fact's clothes — the number is auditable against the sentence, without releasing the
+      record.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    Existing systems ask <em>"may I have the scan?"</em> Lantern asks <em>"what does the scan already
+    know, and how much of that can you have right now, without the scan moving at all?"</em>
+  </div>
+
+  <h2>Verify every claim yourself</h2>
+
+  <p>We would rather you check than take our word. From a clean clone, one command drives all four demo
+  beats against the live API and asserts the numbers:</p>
+
+  <pre><code>python -m app.run_all          # three hospital nodes + the broker
+python tools/verify_demo.py    # in another terminal</code></pre>
+
+  <p>It confirms, in order: federation answering from all three hospitals (EF&nbsp;&lt;&nbsp;40% =
+  30&nbsp;/&nbsp;53&nbsp;/&nbsp;73), the impossible query (fetal atrial width &gt; 10&nbsp;mm =
+  87&nbsp;/&nbsp;78&nbsp;/&nbsp;60), every match carrying provenance and a source snippet, severity
+  &gt;&nbsp;15&nbsp;mm suppressing at every node with no exact count on the wire, a petition routing to
+  the owning hospital and writing an append-only audit entry, and a differencing attack being refused.
+  Nine checks, pass or fail printed per line.</p>
+
+  <h2>The hard questions, answered</h2>
+
+  <table class="qa">
+    <tr><th>You might ask</th><th>Our answer</th></tr>
+    <tr>
+      <td>Extraction from free text will make mistakes.</td>
+      <td>Yes. That is why every measurement carries a confidence and the exact source clause, and never
+      stands alone — a researcher sees the sentence it came from. Before deployment we would validate
+      against a radiologist-adjudicated set. It is extracted evidence, <strong>not clinically
+      validated.</strong></td>
+    </tr>
+    <tr>
+      <td>Below the k threshold, is the count just hidden in the interface?</td>
+      <td>No — it is <strong>absent from the response</strong>. The policy engine is fail-closed:
+      the rule fires the same way every time, and if anything goes wrong in that code path it suppresses,
+      it never serves. The threshold (10) is a config constant surfaced in every response. You get a band,
+      never a number.</td>
+    </tr>
+    <tr>
+      <td>k-anonymity is defeated by differencing.</td>
+      <td>It is, so we built the defense: canonical query fingerprints detect an attacker subtracting two
+      near-identical queries to isolate a rare cohort, and the response degrades. Tested against
+      one-constraint subtraction; multi-axis and cross-session attacks are named limitations, not solved
+      problems.</td>
+    </tr>
+    <tr>
+      <td>Isn't this just search over metadata?</td>
+      <td>It is search over facts that exist as data nowhere today. We manufactured a queryable axis out
+      of prose that was previously unusable — inside the boundary, so the prose stays home.</td>
+    </tr>
+    <tr>
+      <td>What about the actual pixels / full DICOM?</td>
+      <td>Architecturally absent. We do not serve them and never hold them. A petition routes to the
+      owning hospital with IRB and purpose captured, writes an append-only audit entry, and the hospital
+      remains the enforcement point. Approval returns a <em>simulated</em> retrieval grant, not a live
+      endpoint — and we say so.</td>
+    </tr>
+    <tr>
+      <td>Why should a hospital trust the pipeline?</td>
+      <td>It doesn't trust it, it audits it. Every passport ships a de-identification manifest listing
+      exactly what was removed, generalized, and pseudonymized. The evidence travels with the data.</td>
+    </tr>
+  </table>
+
+  <h2>What we deliberately did not do</h2>
+
+  <p>Naming our own limits is the credibility play. This is <strong>PS3.15-aligned field-minimization</strong>,
+  not a certified de-identification — our input is the challenge's JSON metadata, not DICOM objects, and
+  we do <strong>not</strong> claim HIPAA compliance, because Safe Harbor and Expert Determination are the
+  only two roads and neither is a five-hour exercise. No LLM sits in the request path — natural language
+  is <em>validated</em> into a query, never interpreted. There are no image embeddings, no
+  acquisition-parameter indexing, and no similarity search, because the supplied corpus has no pixels or
+  acquisition fields. <strong>No real patient data was used at any point;</strong> every record is
+  synthetic, deliberately, on day one. Three real services, real fan-out — running on one laptop.</p>
+
+  <h2>How it maps to the rubric</h2>
+
+  <div class="who-grid">
+    <div class="who-card"><p><strong>Business &amp; operational strength.</strong> The bottleneck we
+    solve — discovery welded to access — is Boston Children's stated pain. The buyer is the hospital
+    research office; the value is months of cohort-scoping collapsed to a query, with the privacy office's
+    evidence built in.</p></div>
+    <div class="who-card"><p><strong>Technical innovation &amp; execution.</strong> A per-node privacy
+    compiler, federated fan-out with per-node k-anon, rank fusion with explainability, and a working
+    differencing defense — all deterministic, all verifiable with one command.</p></div>
+    <div class="who-card"><p><strong>Alignment with the champion.</strong> Computation goes to the data;
+    only de-identified derivatives return — the same thesis Boston Children's ChRIS is built on. The
+    de-identification evidence, not the search box, is the hero.</p></div>
+    <div class="who-card"><p><strong>Presentation.</strong> A four-beat demo that runs live, a two-minute
+    video, and this page — every number on it re-derivable by you in one command.</p></div>
+  </div>
+
+  <p style="margin-top:2rem">Deeper on the mechanics: <a href="how-it-works.html">how it works</a> ·
+  <a href="privacy.html">privacy &amp; compliance</a> · <a href="science.html">the scientific choices</a>.</p>
+
+</article>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <a class="lockup" href="/"><img class="mark" src="assets/brand/lantern-icon.png" alt=""><img class="wordmark-svg" src="assets/brand/lantern-wordmark.svg" alt="Lantern"></a>
+    <div>Built 25 July 2026 · MIT licensed · synthetic data only</div>
+  </div>
+</footer>
+
+</body>
+</html>
