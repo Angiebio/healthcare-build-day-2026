@@ -274,11 +274,15 @@ async function fetchSearch() {
     label: meta[p.node]?.label || p.node,
     policy: meta[p.node]?.policy,
     k_anon_ok: p.k_anon_ok,
+    guard_action: p.guard_action || 'allow',
     threshold: j.disclosure.threshold,
-    records_withheld: !p.k_anon_ok,
+    records_withheld: !p.k_anon_ok || (p.guard_action && p.guard_action !== 'allow'),
     petition_route: j.disclosure.petition_route,
-    // Mirror the server's discipline: an exact count only exists above k.
-    ...(p.k_anon_ok ? { count: p.records_returned } : { approximate_count: p.approximate_count }),
+    // Clearing k is necessary but not sufficient: a correlated query can still
+    // force this node to withhold its exact count and records.
+    ...(p.k_anon_ok && (!p.guard_action || p.guard_action === 'allow')
+      ? { count: p.records_returned }
+      : { approximate_count: p.approximate_count }),
   }));
 
   const results = (j.results || []).map((row) => ({
