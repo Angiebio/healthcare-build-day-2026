@@ -22,5 +22,5 @@ overturned our own pre-event architecture — which had assumed pixel data that 
 dataset. `process/design-decisions.md` is the record of that reversal.
 
 **Deterministic where it must be correct.** Everything that decides what gets released is a plain,
-tested function in `scripts/`. The language model translates natural language into a *validated*
-query and narrates results. It never decides disclosure and never invents a number.
+tested function in `scripts/`. Natural-language input is *validated*, not interpreted, and no model
+participates in deciding what is disclosed.
