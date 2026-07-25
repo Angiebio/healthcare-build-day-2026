@@ -29,6 +29,6 @@ Literal keyword search is a strong, cheap precision tool when a report uses the 
 
 ## Reproduce offline
 
-```powershell
-C:\Users\ajohn\venvs\hack25\Scripts\python.exe -B evals\delta.py
+```bash
+python -B evals\delta.py
 ```
