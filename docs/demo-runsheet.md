@@ -6,6 +6,11 @@
 **You need:** this page open on a phone or second screen, and the browser. Nothing else.
 **Total runtime:** 1:58. **If you fluff a line, keep going** — we cut once, not per-beat.
 
+> 🎙️ **Two voices.** Angie narrates throughout **except beat 3 (1:15–1:38), which Pooja
+> delivers** — the privacy beat lands harder from the person who does this for a living.
+> Sort out who is at the mic before you hit record, not during. If Pooja is at office hours,
+> Angie reads Pooja's wording verbatim; it's already approved and shouldn't be paraphrased.
+
 ---
 
 # ① PRE-FLIGHT — 60 seconds, do not skip
@@ -139,20 +144,21 @@ screen for a beat.**
 
 ---
 
-### 1:15 – 1:38 · Beat 3 — privacy holding ★
+### 1:15 – 1:38 · Beat 3 — privacy holding ★ · **NARRATOR: POOJA**
+
+> 🎙️ **Voice change here.** Pooja delivers this beat — criterion 3 spoken by an actual QARA
+> authority is worth real points. If she is unavailable, whoever is narrating reads it as
+> written; the wording is hers and is already signed off. **Do not paraphrase this one.**
 
 **DO** — click **`3  severe > 15 mm`**.
 
-**SAY**
+**SAY** *(Pooja's wording, verbatim — approved 12:49)*
 > "Now narrow to severe — over fifteen millimetres.
 >
-> Every hospital goes dark. Each one holds fewer than ten matching studies, and below that
-> threshold no hospital will disclose its own count. You get a band, not a number — and the
-> exact count isn't hidden in the interface, it is **absent from the response**.
->
-> Note *where* that decision was made. Sixteen studies exist across the network, which would
-> clear the threshold — but no single hospital may expose its own small cohort. The hospital is
-> the disclosure boundary. That's what makes this federation and not a warehouse with a login."
+> **Every hospital goes dark.** Below ten, the policy engine won't release a count — the rule
+> is fail-closed, it fires the same way every time, no exceptions. You get a band, never a
+> number. That's the disclosure boundary — the hospital's, not a central system's. That's
+> federation, not a warehouse with a login."
 
 **SEE** — all three node chips turn **red** and read **`<10`**. A red-edged banner appears:
 *"Records withheld at 3 of 3 hospitals."* Table is empty.
