@@ -35,6 +35,47 @@
   <h1>Privacy &amp; compliance</h1>
   <p class="standfirst">What we implemented, what we deliberately did not claim, and how to check both.</p>
 
+  <h2>Privacy points for you</h2>
+
+  <div class="audience-picker">
+    <label for="audience-select">Show the points that matter to you:</label>
+    <select id="audience-select">
+      <option value="researcher">I'm a researcher</option>
+      <option value="privacy-officer">I'm a hospital privacy officer</option>
+      <option value="clinician">I'm a clinician</option>
+      <option value="family">I'm a patient or family member</option>
+    </select>
+  </div>
+
+  <ul class="privacy-points" data-audience="researcher">
+    <li>You get counts and structured facts back, never the underlying report text.</li>
+    <li>Below the small-cohort threshold, you get a petition path instead of records.</li>
+    <li>Every fact is labeled with its source, and its confidence if it was extracted rather than read
+    directly.</li>
+  </ul>
+  <ul class="privacy-points" data-audience="privacy-officer" hidden>
+    <li>Every Study Passport ships with a de-identification manifest: exactly what was removed,
+    generalized, or hashed.</li>
+    <li>De-identification is PS3.15-aligned. We do not claim HIPAA compliance; Safe Harbor and Expert
+    Determination were not attempted in five hours.</li>
+    <li>Every petition and decision is appended to an audit trail with no update or delete path.</li>
+    <li>The k-anonymity threshold is a config constant, visible in every API response, not hidden
+    inside the system.</li>
+  </ul>
+  <ul class="privacy-points" data-audience="clinician" hidden>
+    <li>Research similarity is kept clearly separate from clinical evidence.</li>
+    <li>No image pixels are ever served by Lantern; access requests route to the hospital that owns
+    the study.</li>
+    <li>Every result shows where it came from: a structured field, an extracted value, or a human
+    curation.</li>
+  </ul>
+  <ul class="privacy-points" data-audience="family" hidden>
+    <li>No real patient data was used anywhere in this build; synthetic data only, deliberately.</li>
+    <li>Small or rare cohorts are protected: a count and a petition path, never a record.</li>
+    <li>Your right to access your own child's images is separate from research disclosure, and stays
+    that way.</li>
+  </ul>
+
   <h2>What we claim</h2>
 
   <p>Lantern implements a de-identification pipeline <strong>aligned to DICOM PS3.15</strong>, the
@@ -149,6 +190,16 @@
 <footer>
   Lantern · built 25 July 2026 · MIT licensed · synthetic data only
 </footer>
+
+<script>
+  var select = document.getElementById('audience-select');
+  var lists = document.querySelectorAll('.privacy-points');
+  select.addEventListener('change', function () {
+    lists.forEach(function (el) {
+      el.hidden = el.dataset.audience !== select.value;
+    });
+  });
+</script>
 
 </body>
 </html>

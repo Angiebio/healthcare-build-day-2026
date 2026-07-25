@@ -176,6 +176,27 @@ main { padding: 2.5rem 1.5rem 5rem; }
 }
 .who-card p { margin: 0; font-size: 0.92rem; }
 
+/* --- audience picker: pull-down + the short list it swaps in ---------------- */
+.audience-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.5rem;
+}
+.audience-picker label { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+.audience-picker select { min-width: 15rem; }
+
+.privacy-points {
+  margin: 0 0 2rem;
+  padding-left: 1.1rem;
+}
+.privacy-points li {
+  margin-bottom: 0.6rem;
+  padding-left: 0.3rem;
+}
+.privacy-points li::marker { color: var(--accent); }
+
 /* a pulled-out claim. Use for the one sentence per page that matters most.
    Typographic, not a colour box — a rule above and below, like a pull-quote
    in a printed journal, not a sidebar. */
