@@ -75,6 +75,23 @@ let DATA = null;      // { nodes:[], passports:[] }
 let LAST = null;      // last contract response, for the petition flow
 const $ = (id) => document.getElementById(id);
 
+/* --------------------------------------------------------- session scoping
+   The broker's differencing guard compares each query against others in the SAME
+   session -- correctly, because that is what an attacker probing a cohort looks
+   like. But the demo ladder walks >10mm then >15mm, which is one constraint apart,
+   so on a shared session beat 3 trips the guard and shows "differencing suspected"
+   instead of the clean per-node suppression the pitch promises. Both behaviours are
+   right; they just aren't the same story.
+
+   So: each ladder beat is its own session -- a fresh analyst asking a fresh
+   question. Manual searches from the filter rail KEEP the current session, because
+   a researcher narrowing by hand is exactly the sequence the guard exists to catch,
+   and that is the "try to break it live" moment. Resetting there would disarm it. */
+let SESSION = newSession();
+function newSession() {
+  return 's_' + Math.random().toString(36).slice(2, 10);
+}
+
 /* ---------------------------------------------------------------- data load */
 async function boot() {
   // Prefer the live broker; fall back to fixtures so the console is never dead.
@@ -254,7 +271,9 @@ async function fetchSearch() {
   const r = await fetch(`${BROKER}/search`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ filters: f, role: $('role').value, page_size: 200 }),
+    body: JSON.stringify({
+      filters: f, role: $('role').value, page_size: 200, session: SESSION,
+    }),
   });
 
   if (!r.ok) {
@@ -755,9 +774,11 @@ function wire() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 
   document.querySelectorAll('[data-beat]').forEach((b) => {
-    b.onclick = () => { BEATS[b.dataset.beat](); go(); };
+    // A new beat is a new analyst asking a fresh question, not the same one probing.
+    b.onclick = () => { SESSION = newSession(); BEATS[b.dataset.beat](); go(); };
   });
 
+  SESSION = newSession();
   BEATS['2']();          // open on the hero query — the demo starts warm
   go();
 }

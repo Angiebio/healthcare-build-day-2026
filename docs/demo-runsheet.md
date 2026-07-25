@@ -32,7 +32,7 @@ node tools/verify_live.mjs
 
 Then open the console and leave it open:
 ```
-http://127.0.0.1:8080/app/static/index.html
+http://localhost:8000/
 ```
 Top-right of the grey stripe should read **`source: live broker :8000 · 3/3 nodes reachable`**.
 If it says *local fixtures*, the broker isn't up — the demo still works, but say nothing about
@@ -118,14 +118,17 @@ fired: tumor → …"* with word chips. **Point the cursor at it while you say "
 >
 > That number was never in a database field. A radiologist wrote it in a sentence, and until
 > now it was invisible to search and too risky to share. We compile it into a fact *inside the
-> hospital*, index the fact, and never release the sentence."
+> hospital* and index the fact — the report itself never leaves."
 
 **DO** — now click the **first table row** (`bch:FT-3091`).
 
 **SAY** *(second half, panel open)*
-> "And every fact shows its work: the value, the confidence, and the exact sentence it came
-> from. Left and right, parsed separately. A model's guess never gets to wear a clinical fact's
-> clothes."
+> "And every fact shows its work: the value, the confidence, and the clause it was read from —
+> enough to check the number, not the narrative around it. Left and right, parsed separately.
+> A model's guess never gets to wear a clinical fact's clothes."
+
+> ⚠️ **Never say "we never release the sentence."** We do release a bounded evidence snippet,
+> on purpose. Say *"the report never leaves; the clause that justifies the number does."*
 
 **SEE** — node chips **BCH 87 · MGH 78 · BWH 60**. Panel slides in from the right showing
 **two** atrial-width measurements: `right 18.2 mm` and `left 17.9 mm`, each with a confidence

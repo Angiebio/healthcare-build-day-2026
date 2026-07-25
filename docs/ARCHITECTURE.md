@@ -51,9 +51,12 @@ Name: **Lantern** (Ying's, adopted). Tagline: **Open discovery. Governed pixels.
 5. **Access Petition + Audit** — request full data → routes to the owning node → append-only audit
    entry. We broker; we never serve what we shouldn't hold.
 
-**Everything deterministic lives in `scripts/`. The LLM narrates and parses natural language into a
-*validated* query AST — it never decides what is released, never invents a number, never sees the
-prose it isn't allowed to see.**
+**Everything lives in `scripts/` and is deterministic. As shipped there is no LLM anywhere in the
+request path** — natural-language input is expanded against a curated synonym map and compiled into a
+*validated* query AST by ordinary code. LLM query parsing was on the plan and was cut; we did not need
+it, and its absence is worth stating out loud: **nothing in this system can invent a number, and
+nothing statistical decides what is released.** Same discipline either way — an LLM may only ever
+propose, and the Pydantic validator disposes.
 
 ---
 
@@ -73,7 +76,8 @@ prose it isn't allowed to see.**
    │   └───────────────────────────────────────────────────────────────────────────┘        │
    │           │                                                                             │
    │       STUDY PASSPORT  ──── the ONLY thing that crosses ────►                            │
-   │       (facts + codes + bands + embedding of the CLEANED summary. No prose. No pixels.)  │
+   │       (typed facts + codes + bands + provenance. No full report. No pixels.             │
+   │        Each fact carries a bounded evidence snippet: the clause it was read from.)      │
    └─────────────────────────────────────────────────────────────────────────────────────────┘
                                               │
                         ┌─────────────────────▼──────────────────────┐
@@ -88,21 +92,40 @@ prose it isn't allowed to see.**
                                     PETITION → owning node → APPEND-ONLY AUDIT
 ```
 
-**The claim that wins the champion:** computation goes to the data; only de-identified derivatives come
-back; **the embedding is computed on the cleaned passport summary, never on the raw report** — so the
-vector itself is structurally incapable of leaking PHI. (Ying flagged embeddings as governed data. We
-go one better and make them safe by construction.)
+**The claim that wins the champion:** computation goes to the data; only de-identified derivatives
+come back. The compiler runs **node-side, in a sidecar that is the only process permitted to touch the
+raw record** — the broker has no import and no route that reaches `/api/studies`, which makes the
+trust-boundary claim a `grep`, not a promise.
+
+**What actually crosses, stated precisely.** The full radiology report never leaves the node. What
+does cross is a **bounded evidence snippet per extracted fact** — roughly the clause the number was
+read from — because a measurement a researcher cannot trace is a measurement they cannot trust, and
+"12.4 mm, source withheld" is not a scientific claim. That is a deliberate disclosure decision, not an
+oversight: we release the sentence fragment that justifies a number and withhold the narrative around
+it. **Say it that way.** Claiming "no prose crosses" is both false and unnecessary — the honest
+version is stronger, because it shows we priced the tradeoff instead of hiding it.
+
+> *Cut, and not shipped: image/text embeddings and any vector similarity.* Earlier drafts of this
+> document described embedding the cleaned summary. The corpus has no pixels and we cut the lane; there
+> is no encoder and no vector index in this build. It is named here so nobody pitches it.
 
 ---
 
 ## 3. Privacy tiers (four, over the same study)
 
-| Tier | Audience | Contents | Prose? | Pixels? |
-|---|---|---|---|---|
-| **L0 Public/Patient** | patients, public | codes in plain language, modality, body region, age band, "a small cohort exists at 2 nodes" | no | no |
-| **L1 Researcher** ★ | computational researchers | full Passport: typed measurements, acquisition facts, codes, age band, quality, embedding, **cohort export** | no | no |
-| **L2 Clinician** | verified clinicians | L1 + narrower age band + owner contact route | no | no |
-| **L3 Source** | data owner only | **NOT SERVED — petition only.** Routes to owner with IRB/purpose + audit | — | — |
+| Tier | Audience | Contents | Full report? | Evidence snippet? | Pixels? |
+|---|---|---|---|---|---|
+| **L0 Public/Patient** | patients, public | modality, body region, population band, existence-of-cohort signal | no | no | no |
+| **L1 Researcher** ★ | computational researchers | full Passport: typed measurements with provenance + confidence, curated concept codes, population band, computational-readiness block | no | **yes** — the clause each number came from | no |
+| **L2 Clinician** | verified clinicians | L1 + owner contact route | no | yes | no |
+| **L3 Source** | data owner only | **NOT SERVED — petition only.** Routes to owner with IRB/purpose + audit | — | — | — |
+
+*Not in any tier, because we did not build them:* acquisition parameters (TR/TE, field strength,
+slice geometry — absent from this corpus), image quality metrics, embeddings/similarity, and
+cohort CSV export. The passport says so itself: every record carries
+`computational_readiness.missing_for_full_computability`, which names exactly what a real deployment
+would still need to index. **That field is the most credible thing in the system — it is the build
+telling you where it stops.**
 
 **Release states** (Ying's, adopted — no fake "HIPAA score"):
 `BLOCKED · HUMAN_REVIEW_REQUIRED · PUBLIC_CATALOG_ONLY · CONTROLLED_DERIVATIVE · APPROVED_DEIDENTIFIED · OWNER_AUTHORIZED_SOURCE_ACCESS`
@@ -138,10 +161,15 @@ the only two roads and we drove neither in five hours. Say the accurate thing; i
 - Petition → owner route → append-only audit
 - Researcher view, end to end
 
-**Cut in this order when time bites:**
-patient view → clinician view → live embedding (fall back to deterministic lexical+numeric ranking)
-→ LLM query parsing (fall back to the filter UI, which must always work) → SNOMED breadth (5 curated
-concepts is enough) → cohort CSV export.
+**Cut in this order when time bites** — and this is the historical plan; the strikethroughs are what
+we actually spent:
+patient view → clinician view → ~~live embedding~~ **(cut — deterministic lexical + numeric ranking
+shipped instead)** → ~~LLM query parsing~~ **(cut — the filter UI and a curated synonym map carry it,
+with no model in the request path)** → SNOMED breadth (a curated demonstration map shipped, as
+planned) → ~~cohort CSV export~~ **(cut)**.
+
+*We got further down this list than expected, which is why §1 and §3 above name the absences
+explicitly rather than leaving the plan to imply we built them.*
 
 **Cut immediately, do not debate:** radiomics · defacing · burned-in OCR (no pixels exist) · real
 SNOMED server · Orthanc/Docker (no Docker on this laptop) · viewer · diagnosis model · auth beyond a

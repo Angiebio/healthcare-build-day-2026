@@ -17,30 +17,43 @@ Node map: `8001=BCH (pediatric)`, `8002=MGH (adult)`, `8003=BWH (adult)`.
 ## Our API (`app/`, FastAPI, port 8000)
 
 ```http
+GET  /                  the researcher console (static SPA). The UI is served by the broker
+                        itself, so :8000 is the only port a demo needs.
+
 POST /search
-  body: { text?: str, filters?: {...}, role: "researcher"|"clinician"|"patient", page?, page_size? }
-  → { query_ast, results: [PassportSummary], disclosure: Disclosure, nodes_queried: [...], timing_ms }
+  body: { text?: str, filters?: {...}, role: "researcher"|"clinician"|"patient",
+          session?: str, page?, page_size? }
+  → { query_ast, results, disclosure, guard, nodes_queried, page, page_size, timing_ms }
   ⚠️ `total_before_suppression` REMOVED (25JUL, red team). Returning an exact pre-suppression count
   alongside a suppressed cohort defeats k-anonymity. When suppression fires, return ONLY the bucket.
-  Each result carries `why`: {signals_fired, reason_text, measurements_matched}
+  Each result is { passport, node, why } — `why` = {signals_fired, reason_text, measurements_matched}
+  Per-node disclosure lives at `disclosure.per_node[]`; `nodes_queried` is a list of node NAMES.
+  `session` scopes the differencing guard. Queries sharing a session are compared against each
+  other; omit it and everything lands in one shared bucket, which will produce spurious
+  differencing warnings during a scripted demo. **Send a fresh session per unrelated query.**
 
 GET  /passport/{node}/{study_id}
-  → full Tier-appropriate Passport (see §Passport). Never prose. Never pixels.
-     Includes `deid_manifest` (what was stripped) + per-field `provenance`.
-
-GET  /cohort
-  params: same filters as /search
-  → { count | approximate_count, k_anon_ok, threshold, petition_route }
+  → full Tier-appropriate Passport (see §Passport). Never the full report. Never pixels.
+     Carries a bounded evidence snippet per measurement, `deid_manifest`, and per-field `provenance`.
 
 POST /petition
   body: { requester_name, institution, irb_number, purpose, cohort_filter, tier_requested }
   → { petition_id, status: "routed_to_owner", owner_node, owner_contact, audit_id, timestamp }
   Side effect: append-only audit write. This is the ONLY path toward source data.
 
-PATCH /petition/{id}    body: { decision: "approve"|"deny", reviewer, note }   (owner view)
+POST /petition/{id}/decision   body: { decision: "approve"|"deny", reviewer, note }  (owner view)
+  Appends a decision EVENT; it never mutates the original petition. POST, not PATCH — the verb
+  should say "append", because that is what the audit guarantees.
 GET  /petitions         (owner view — pending queue)
 GET  /audit             append-only trail, newest first. Never mutable.
-GET  /nodes             node health + study counts + policy summary (demo credibility)
+GET  /nodes             → { nodes: [{node,label,studies,policy,reachable,...}], k_anon_threshold }
+                        NOTE: an object, not a bare array.
+
+GET  /cohort            ❌ NOT IMPLEMENTED — returns 400 by design.
+                        Cohort counts come from `POST /search` → read `disclosure`. A separate
+                        count endpoint is a differencing gift: it hands out cohort sizes without
+                        the guard that watches how they are being asked for. Kept in the doc as a
+                        deliberate refusal rather than deleted, so nobody re-adds it.
 ```
 
 ### Passport (the artifact — L1 researcher view)

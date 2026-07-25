@@ -68,16 +68,23 @@ some teams will skip this entirely and it's literally the first thing the champi
 >
 > That number was never in a database field. A radiologist wrote it in a sentence, and
 > until now it was invisible to search and too risky to share. We compile it into a fact
-> *inside the hospital*, index the fact, and never release the sentence."
+> *inside the hospital* and index the fact — **the report itself never leaves.**"
 >
-> **[open a bilateral study — e.g. `bch:FT-4113`]**
+> **[click the first table row — `bch:FT-3091`]**
 >
-> "And every fact shows its work: the value, the confidence, and **the exact sentence it
-> came from**. Left and right, parsed separately. A model's guess never gets to wear a
-> clinical fact's clothes."
+> "And every fact shows its work: the value, the confidence, and **the clause it was read
+> from** — enough to check the number, not the narrative around it. Left and right, parsed
+> separately. A model's guess never gets to wear a clinical fact's clothes."
 
-*(23s. THE beat. Verified 87 / 78 / 60 = 225. Open a genuinely bilateral record — proves
-the parser isn't naive, and that detail is what a radiologist will notice.)*
+*(23s. THE beat. Verified 87 / 78 / 60 = 225. First row is deterministic and bilateral —
+`right 18.2 mm` / `left 17.9 mm` — which proves the parser isn't naive, and that detail is
+what a radiologist will notice.)*
+
+> ⚠️ **Do not say "we never release the sentence."** We do release a bounded evidence
+> snippet, deliberately, because an untraceable measurement is not a scientific claim. The
+> honest line — *"the report never leaves; the clause that justifies the number does"* — is
+> both true and stronger, and it survives the follow-up question. Overclaiming here is the
+> single easiest way to be caught by someone who then opens a passport and reads one.
 
 ## 1:15–1:38 · Beat 3 — privacy holding under pressure ★
 
@@ -137,7 +144,7 @@ Never:
 
 ## Recording notes
 
-- **Window:** browser only, 1920×1080, console at `http://127.0.0.1:8080/app/static/index.html`.
+- **Window:** browser only, 1920×1080, console at `http://localhost:8000/`.
 - **Zoom to ~125%** before recording. Judges may watch this on a laptop.
 - Demo-ladder buttons are in the left rail, in order — **no typing on camera**, nothing to fumble.
 - The console boots already on beat 2, so hit "1a" first to start clean.

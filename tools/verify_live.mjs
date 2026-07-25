@@ -118,19 +118,92 @@ const probe = async (mmGt, weeksMax) => {
   return { n: j.disclosure?.returned_count ?? 0, guard: j.guard };
 };
 
-const a = await probe(12);
-const b = await probe(12, 31);
-if (a && b) {
-  const delta = a.n - b.n;
-  const caught = b.guard && b.guard.risk && b.guard.risk !== 'none';
-  console.log(`\n  differencing probe  >12mm=${a.n}  +<=31wk=${b.n}  delta=${delta}`);
-  console.log(`  guard on 2nd query: risk=${b.guard?.risk} action=${b.guard?.action}`);
-  if (delta > 0 && delta < K && !caught) {
-    fail(`guard did NOT fire on a sub-k delta of ${delta} — the "try to break it" ` +
-         `invitation is not yet safe to offer`);
-  }
-} else {
-  console.log('\n  differencing probe skipped (a probe was refused)');
+// (The scoped, reproducible version of this runs at the end of the file, in its
+// own session. Left here only as a quick eyeball on the unscoped default session.)
+
+/* ------------------------------------------------------------------------
+   THE DEMO SEQUENCE, exactly as the runsheet walks it.
+
+   >10mm then >15mm is one constraint apart, so on a SHARED session the guard
+   correctly calls it differencing -- and beat 3 then shows "differencing
+   suspected" instead of the clean per-node suppression the script promises.
+   The console gives each ladder beat its own session for that reason. This
+   asserts both halves: separate sessions stay clean, a shared session still
+   catches the probe. If someone ever drops the session field, this fails.
+   ------------------------------------------------------------------------ */
+const beatSearch = async (mm, session) => {
+  const r = await fetch(`${BROKER}/search`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      filters: {
+        imaging: { modality: ['MR'], body_site: ['FETAL'] },
+        population: { basis: 'gestational' },
+        numeric: [{ quantity: 'lateral_ventricular_atrial_width', op: 'gt', value: mm, unit: 'mm' }],
+        access: { min_layer: 'L1' },
+      },
+      role: 'researcher', page_size: 200, session,
+    }),
+  });
+  return r.ok ? r.json() : null;
+};
+
+console.log('\n  demo sequence (beat 2 -> beat 3):');
+
+// As the console does it: a fresh session per beat.
+await beatSearch(10, 's_beat2');
+const clean = await beatSearch(15, 's_beat3');
+const cleanGuard = clean?.guard?.risk ?? 'unknown';
+const cleanSuppressed = (clean?.disclosure?.per_node || []).every((p) => !p.k_anon_ok);
+const cleanOk = cleanGuard === 'none' && cleanSuppressed;
+console.log(`  ${cleanOk ? 'PASS' : 'FAIL'}  separate sessions -> guard=${cleanGuard}, ` +
+            `all nodes suppressed=${cleanSuppressed}`);
+if (!cleanOk) {
+  fail('beat 3 must show clean per-node suppression, not a differencing warning — ' +
+       'the console must send a fresh `session` per ladder beat');
+}
+
+// Sharing a session is NOT by itself suspicious, and the guard is right not to
+// cry wolf: >10mm -> >15mm drops BCH from 87 to 7, a delta of 80. Nothing is
+// recoverable from that, so nothing should fire. Assert the quiet case too --
+// a guard that flags every narrowing is a guard nobody will trust on stage.
+await beatSearch(10, 's_wide');
+const wide = await beatSearch(15, 's_wide');
+const wideQuiet = (wide?.guard?.risk ?? 'unknown') === 'none';
+console.log(`  ${wideQuiet ? 'PASS' : 'FAIL'}  shared, large delta -> guard=` +
+            `${wide?.guard?.risk} (should stay "none"; delta ~80/node leaks nothing)`);
+if (!wideQuiet) fail('guard fired on a harmless wide narrowing — false positives erode the demo');
+
+/* And the real exploit, in its own session so the result is reproducible rather
+   than dependent on whatever else has been asked today. The guard is per-node:
+   BCH 48 -> 39 is a delta of 9, under k, even though the network delta is 17.
+   That per-node view is the whole point -- the hospital is the disclosure boundary. */
+const exploit = async (weeksMax, session) => {
+  const population = { basis: 'gestational' };
+  if (weeksMax) population.gestational_age_max_weeks = weeksMax;
+  const r = await fetch(`${BROKER}/search`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      filters: {
+        imaging: { modality: ['MR'], body_site: ['FETAL'] },
+        population,
+        numeric: [{ quantity: 'lateral_ventricular_atrial_width', op: 'gt', value: 12, unit: 'mm' }],
+        access: { min_layer: 'L1' },
+      },
+      role: 'researcher', page_size: 200, session,
+    }),
+  });
+  return r.ok ? r.json() : null;
+};
+
+await exploit(null, 's_exploit');
+const caught = await exploit(31, 's_exploit');
+const risk = caught?.guard?.risk ?? 'unknown';
+const armed = risk !== 'none' && risk !== 'unknown';
+console.log(`  ${armed ? 'PASS' : 'FAIL'}  differencing exploit -> guard=${risk} ` +
+            `action=${caught?.guard?.action} (BCH 48->39, delta 9 < k)`);
+if (!armed) {
+  fail('the pinned exploit no longer trips the guard — either re-derive a pair or ' +
+       'cut the "try to break it" invitation from the champion brief');
 }
 
 console.log(failures ? `\n${failures} FAILURE(S)` : '\nlive chain verified');

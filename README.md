@@ -47,7 +47,7 @@ audit the number against the phrase it came from without receiving the record.
 │    · extract measurements from prose ★  │ ───► │ rank fusion + WHY   │ ──► researcher
 │    · code concepts (SNOMED/HPO)         │      │ disclosure policy   │     clinician
 │    · mark age basis + generalize safely │      │ petition + audit    │     patient
-│  → STUDY PASSPORT (no prose, no pixels) │      └─────────────────────┘
+│  → STUDY PASSPORT (no report, no pixels)│      └─────────────────────┘
 └─────────────────────────────────────────┘
 ```
 
@@ -79,9 +79,9 @@ retrieval endpoint.
 
 ## Honest claims
 
-- This is **PS3.15-aligned**, not certified or audited. We deliberately do **not** claim HIPAA
-  compliance — Safe Harbor and Expert Determination are the only two roads and neither is a
-  five-hour exercise.
+- This is **PS3.15-inspired field minimization**, not a certified or audited implementation of the
+  profile. We deliberately do **not** claim HIPAA compliance. Safe Harbor and Expert Determination
+  are the only two routes and neither is a five-hour exercise.
 - Extracted measurements carry stated confidence and provenance. They are **not clinically validated**.
 - **No real PHI was used.** Synthetic challenge data only, deliberately, on day one.
 - The three-node federation is real fan-out across three separate services — running on one laptop.
