@@ -197,6 +197,50 @@ main { padding: 2.5rem 1.5rem 5rem; }
 }
 .privacy-points li::marker { color: var(--accent); }
 
+/* --- process-flow strip: hospital -> passport -> Lantern -> researcher/family */
+.flow-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 1.5rem 0 2.5rem;
+  padding: 1.5rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.flow-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 6.5rem;
+  text-align: center;
+}
+.flow-node img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 0.4rem;
+}
+.flow-node span {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  line-height: 1.25;
+}
+.flow-node--center img { width: 56px; height: 56px; }
+.flow-node--center span { color: var(--ink); font-weight: 600; }
+.flow-node:not(:last-child)::after {
+  content: "→";
+  color: var(--accent);
+  font-size: 1.1rem;
+  margin: 0 0.5rem 1.4rem;
+}
+@media (max-width: 640px) {
+  .flow-node:not(:last-child)::after { content: "↓"; margin: 0.2rem 0; }
+  .flow-row { flex-direction: column; }
+}
+
 /* a pulled-out claim. Use for the one sentence per page that matters most.
    Typographic, not a colour box — a rule above and below, like a pull-quote
    in a printed journal, not a sidebar. */
