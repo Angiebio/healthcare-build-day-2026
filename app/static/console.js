@@ -81,12 +81,17 @@ async function boot() {
   try {
     const r = await fetch(`${BROKER}/nodes`, { signal: AbortSignal.timeout(1200) });
     if (r.ok) {
-      DATA = { nodes: await r.json(), passports: null, live: true };
-      $('source-badge').textContent = 'source: live broker :8000';
+      // /nodes returns { nodes: [...], k_anon_threshold: n } -- an object, not an array.
+      const meta = await r.json();
+      DATA = { nodes: meta.nodes, passports: null, live: true,
+               threshold: meta.k_anon_threshold ?? K_ANON };
+      const up = meta.nodes.filter((n) => n.reachable).length;
+      $('source-badge').textContent =
+        `source: live broker :8000 · ${up}/${meta.nodes.length} nodes reachable`;
       wire();
       return;
     }
-  } catch (_) { /* broker not up yet — expected before ~12:30 */ }
+  } catch (_) { /* broker not up yet — fall through to fixtures, never a dead page */ }
 
   const res = await fetch('fixtures.json');
   if (!res.ok) throw new Error(`WIRING FAILURE: fixtures.json unreachable (${res.status})`);
@@ -112,6 +117,13 @@ function readFilters() {
 
   const stage = $('stage').value;
   if (stage) f.population.stages = [stage];
+
+  // The broker's QueryAST refuses a fetal query that doesn't declare its population
+  // basis, because PatientAge on a fetal record is the MOTHER's age. Declaring it is
+  // not ceremony -- it is the client stating which clock it means, so a 20-year-old
+  // mother can never be read as a 20-year-old patient. Same reason the passport
+  // carries `basis`.
+  if (f.imaging.body_site.includes('FETAL')) f.population.basis = 'gestational';
 
   const gmin = parseFloat($('gest-min').value);
   const gmax = parseFloat($('gest-max').value);

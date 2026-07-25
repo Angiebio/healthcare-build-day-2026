@@ -136,7 +136,7 @@ def extract_measurements(report_text: str) -> list[Measurement]:
             )
         )
 
-    return measurements
+    return sorted(measurements, key=lambda measurement: measurement.span)
 
 
 def _extract_dimension_pairs(report_text: str) -> list[Measurement]:

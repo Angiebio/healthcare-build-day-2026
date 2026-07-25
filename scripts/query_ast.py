@@ -55,9 +55,12 @@ class _StrictModel(BaseModel):
 
 
 class PopulationQuery(_StrictModel):
+    basis: Literal["chronological", "gestational"] = "chronological"
     stages: list[str] = Field(default_factory=list)
     age_min_years: float | None = None
     age_max_years: float | None = None
+    gestational_age_min_weeks: float | None = None
+    gestational_age_max_weeks: float | None = None
     sex: Literal["M", "F", "O", "unknown"] | None = None
 
     @field_validator("stages")
@@ -80,14 +83,44 @@ class PopulationQuery(_StrictModel):
             raise ValueError("age must be between 0 and 130 years")
         return value
 
+    @field_validator("gestational_age_min_weeks", "gestational_age_max_weeks")
+    @classmethod
+    def validate_gestational_age(cls, value: float | None) -> float | None:
+        if value is None:
+            return None
+        _require_plain_number(value, "gestational age")
+        if not 0.0 <= value <= 45.0:
+            raise ValueError("gestational age must be between 0 and 45 weeks")
+        return value
+
     @model_validator(mode="after")
-    def validate_age_range(self) -> "PopulationQuery":
+    def validate_population_basis(self) -> "PopulationQuery":
         if (
             self.age_min_years is not None
             and self.age_max_years is not None
             and self.age_min_years > self.age_max_years
         ):
             raise ValueError("age_min_years cannot exceed age_max_years")
+        if (
+            self.gestational_age_min_weeks is not None
+            and self.gestational_age_max_weeks is not None
+            and self.gestational_age_min_weeks > self.gestational_age_max_weeks
+        ):
+            raise ValueError(
+                "gestational_age_min_weeks cannot exceed gestational_age_max_weeks"
+            )
+        if self.basis == "gestational":
+            if self.stages or self.age_min_years is not None or self.age_max_years is not None:
+                raise ValueError(
+                    "gestational populations cannot use chronological stages or age_years"
+                )
+        elif (
+            self.gestational_age_min_weeks is not None
+            or self.gestational_age_max_weeks is not None
+        ):
+            raise ValueError(
+                "gestational age bounds require population.basis='gestational'"
+            )
         return self
 
 
@@ -128,7 +161,7 @@ class NumericConstraint(_StrictModel):
     quantity: str
     op: Literal["lt", "lte", "gt", "gte", "between"]
     value: float | None = None
-    range: tuple[float, float] | None = None
+    range: list[float] | None = None
     unit: str
 
     @field_validator("quantity")
@@ -149,6 +182,8 @@ class NumericConstraint(_StrictModel):
         if self.op == "between":
             if self.value is not None or self.range is None:
                 raise ValueError("between requires range=[low, high] and forbids value")
+            if len(self.range) != 2:
+                raise ValueError("between range must contain exactly [low, high]")
             low, high = self.range
             _validate_numeric_bound(low, minimum, maximum, self.quantity)
             _validate_numeric_bound(high, minimum, maximum, self.quantity)
@@ -172,6 +207,20 @@ class QueryAST(_StrictModel):
     numeric: list[NumericConstraint] = Field(default_factory=list)
     access: AccessQuery = Field(default_factory=AccessQuery)
 
+    @model_validator(mode="after")
+    def validate_population_imaging_basis(self) -> "QueryAST":
+        includes_fetal = "FETAL" in self.imaging.body_site
+        if includes_fetal and self.population.basis != "gestational":
+            raise ValueError(
+                "FETAL imaging requires population.basis='gestational'; "
+                "PatientAge is maternal age in this corpus"
+            )
+        if self.population.basis == "gestational" and self.imaging.body_site != ["FETAL"]:
+            raise ValueError(
+                "gestational population queries must target body_site=['FETAL']"
+            )
+        return self
+
 
 def compile_query(nl_text: str | None, filters: dict[str, Any]) -> QueryAST:
     """Validate an exact executable query, rejecting rather than weakening it.
@@ -185,7 +234,10 @@ def compile_query(nl_text: str | None, filters: dict[str, Any]) -> QueryAST:
     if nl_text is not None:
         if not isinstance(nl_text, str):
             raise QueryError("nl_text must be a string or None")
-        _validate_safe_text(nl_text, "natural-language query", max_length=1_000)
+        try:
+            _validate_safe_text(nl_text, "natural-language query", max_length=1_000)
+        except ValueError as exc:
+            raise QueryError(f"query rejected: {exc}") from exc
     if not isinstance(filters, dict):
         raise QueryError("filters must be a dictionary")
     try:
@@ -225,12 +277,8 @@ def _validate_numeric_bound(
 GOLDEN_QUERY: Final[QueryAST] = compile_query(
     nl_text=None,
     filters={
-        "population": {"age_max_years": 8.0},
-        "imaging": {"modality": ["MR"], "body_site": ["BRAIN"]},
-        "clinical": {
-            "concepts": ["SNOMED:12738006", "HPO:0002119"],
-            "expand_ontology": False,
-        },
+        "population": {"basis": "gestational"},
+        "imaging": {"modality": ["MR"], "body_site": ["FETAL"]},
         "numeric": [
             {
                 "quantity": "lateral_ventricular_atrial_width",

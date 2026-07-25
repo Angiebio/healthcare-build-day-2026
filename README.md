@@ -21,15 +21,15 @@ approaches hospitals one at a time and waits months to learn whether enough data
 We profiled the challenge corpus (3 hospital nodes × 900 studies) before designing anything, and
 found the thing that shaped the whole build:
 
-> **76% of the radiology reports contain quantitative clinical measurements locked in prose.**
+> **78.4% of reports network-wide contain quantitative clinical measurements locked in prose.**
 > Ventricular atrial widths in mm. Ejection fractions. Gestational age in weeks.
 
-A radiologist already measured a child's lateral ventricular atrial width at 12.4 mm. It sits in
-sentence three of a paragraph — which makes it **simultaneously invisible to search and too risky to
-share**, because free-text reports are the densest PHI surface in the record.
+A fetal-medicine radiologist already measured a lateral ventricular atrial width at 12.4 mm. It sits
+in sentence three of a paragraph — which makes it **simultaneously invisible to search and too risky
+to share**, because free-text reports are the densest PHI surface in the record.
 
-So today you can search *"pediatric brain MRI."* You cannot search
-**"lateral ventricular atrial width over 10 mm, in children under 8."**
+So today you can search *"fetal MRI."* You cannot search
+**"fetal MR with lateral ventricular atrial width greater than 10 mm."**
 
 ## What Lantern does
 
@@ -44,7 +44,7 @@ boundary*. The measurements become a structured, queryable axis. The prose never
 │    · strip PHI                          │      │ federated search    │
 │    · extract measurements from prose ★  │ ───► │ rank fusion + WHY   │ ──► researcher
 │    · code concepts (SNOMED/HPO)         │      │ disclosure policy   │     clinician
-│    · generalize age → band, shift dates │      │ petition + audit    │     patient
+│    · mark age basis + generalize safely │      │ petition + audit    │     patient
 │  → STUDY PASSPORT (no prose, no pixels) │      └─────────────────────┘
 └─────────────────────────────────────────┘
 ```
