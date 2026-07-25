@@ -96,6 +96,14 @@ body {
 .nav a:hover { color: var(--ink); border-bottom-color: var(--rule); }
 .nav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
 
+/* --- focus: visible everywhere, never suppressed. a regulator's browser is
+   often a keyboard, not a mouse. --------------------------------------------- */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* --- page shell ----------------------------------------------------------- */
 main { padding: 2.5rem 1.5rem 5rem; }
 .prose { max-width: var(--measure); margin: 0 auto; }
@@ -136,6 +144,7 @@ main { padding: 2.5rem 1.5rem 5rem; }
 }
 
 /* --- data surfaces: shared with the search console ------------------------ */
+.table-scroll { overflow-x: auto; margin: 1rem 0; }
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -167,6 +176,47 @@ main { padding: 2.5rem 1.5rem 5rem; }
 .tag--permitted { border-color: var(--signal); color: var(--signal); }
 .tag--review    { border-color: var(--caution); color: var(--caution); }
 .tag--blocked   { border-color: var(--stop);    color: var(--stop); }
+
+/* --- form controls: the console's filter rail and petition form both need
+   these, and neither should invent its own look. One instrument, one hand. -- */
+input, select, textarea {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.6rem;
+  line-height: 1.4;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.3rem;
+}
+
+button, .btn {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+button:hover, .btn:hover { border-color: var(--ink-soft); }
+
+/* the one button per screen that matters — search, submit a petition */
+button.primary, .btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+button.primary:hover, .btn--primary:hover { background: var(--ink); border-color: var(--ink); }
 
 footer {
   border-top: 1px solid var(--rule);
