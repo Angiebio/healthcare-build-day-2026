@@ -9,7 +9,17 @@
 <body>
 
 <header class="masthead">
-  <a class="wordmark" href="/">Lantern</a>
+  <a class="wordmark" href="/">
+    <svg class="logo-mark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 2v2.6"/>
+      <path d="M9.3 4.6h5.4l1.1 3.1H8.2z"/>
+      <path d="M8.6 7.7h6.8l-1.15 10.6a1 1 0 0 1-1 .9h-2.5a1 1 0 0 1-1-.9z"/>
+      <path d="M9.1 19.2h5.8"/>
+      <path d="M12 10.3c-1.05 1.05-1.5 1.95-1.5 2.75a1.5 1.5 0 0 0 3 0c0-.5-.25-1.05-.55-1.55"/>
+    </svg>
+    <span>Lantern</span>
+  </a>
   <span class="tagline">Open discovery. Governed pixels.</span>
   <nav class="nav">
     <a href="/">Search console</a>
@@ -21,6 +31,7 @@
         <li><a href="for-patients.html">For patients and families<small>Plain language, and your own images</small></a></li>
       </ul>
     </span>
+    <a href="how-it-works.html">How it works</a>
     <a href="science.html">Scientific choices</a>
     <a href="privacy.html">Privacy</a>
   </nav>
@@ -33,22 +44,32 @@
   <p class="standfirst">A child's MRI can help thousands of other children, but only if a researcher
   can find it, and only if finding it never puts that child's privacy at risk.</p>
 
+  <figure class="hero-image">
+    <img src="assets/images/hero-lantern-refined.png" loading="lazy"
+      alt="Diagram illustration: a researcher figure and a secure hospital data icon connected through a
+      central lantern icon by dotted lines, representing discovery without image transfer.">
+    <figcaption>Illustrative diagram, AI-generated for this demo.</figcaption>
+  </figure>
+
   <h2>The problem</h2>
 
   <p>A child is treated for a brain tumor. Every few months there is another MRI, and a family waits
   to hear whether it has grown. Researchers want to build tools that measure those changes more
-  consistently than any single clinician can. To do that well, they need examples, from many
-  children, many scanners, many hospitals, many stages of disease.</p>
+  consistently than any single clinician can. To do that well, they need examples from many children,
+  many scanners, many hospitals, many stages of disease.</p>
 
-  <p>Pediatric brain tumors are uncommon. No single hospital holds enough cases. The scans very likely
-  already exist, scattered across a network of children's hospitals. Today there is no reliable way to
-  find out where.</p>
+  <p>No single hospital sees enough of them. Brain and central nervous system tumors are the most
+  common solid tumor in children and the
+  <a href="https://academic.oup.com/neuro-oncology/article/27/Supplement_1/i1/8251654" target="_blank" rel="noopener">leading cause of childhood cancer death</a>
+  in the United States, yet any one tumor type and stage is still rare enough that a single hospital's
+  own cases are too few to train a reliable model alone. The scans very likely already exist, scattered
+  across a network of children's hospitals. Today there is no reliable way to find out where.</p>
 
   <p>So researchers approach hospitals one at a time. They spend months on introductions, approvals,
-  and study descriptions before they learn whether enough suitable data even exists, let alone
-  receive authorization to look at it. Meanwhile every hospital is doing the right thing: protecting
-  patients under federal, state, contractual, and institutional obligations that do not permit
-  gathering everything in one place.</p>
+  and study descriptions before they learn whether enough suitable data even exists, let alone receive
+  authorization to look at it. Meanwhile every hospital is doing the right thing: protecting patients
+  under federal, state, contractual, and institutional obligations that do not permit gathering
+  everything in one place.</p>
 
   <p>The bottleneck is not unwillingness. It is that discovery and access have been welded together.
   You cannot ask <em>"does this data exist?"</em> without effectively asking <em>"may I have it?"</em></p>
@@ -57,16 +78,9 @@
 
   <p>Lantern separates those two questions.</p>
 
-  <p>Each hospital compiles its own studies into a de-identified <strong>Study Passport</strong>, a structured description of what a scan contains and what it can support, generated
+  <p>Each hospital compiles its own studies into a de-identified <strong>Study Passport</strong>: a
+  structured description of what a scan contains and what it can support, generated
   <em>inside the hospital's own boundary</em>. Only the passport travels. The images never do.</p>
-
-
-  <figure class="diagram">
-    <img src="architecture.svg" alt="Raw records are compiled inside the hospital into de-identified Study Passports. Only passports cross to the Lantern broker, which federates search, applies disclosure policy, and routes petitions back to the owning hospital.">
-    <figcaption>Compilation happens inside the hospital boundary. Only the passport crosses. The
-    broker has no route, import, or address that reaches a raw record, and a test proves it rather
-    than a document asserting it.</figcaption>
-  </figure>
 
   <p>A researcher searches across the network, sees what exists and where, and evaluates whether the
   cohort suits their work. When they need the underlying data, they submit a petition that routes to
@@ -81,54 +95,50 @@
   <h2>What we found in the data</h2>
 
   <p>Before designing anything, we measured the corpus we were given. One finding reshaped the entire
-  project: <strong>78% of the radiology reports contain quantitative clinical measurements written
-  into the prose</strong>, ventricular widths in millimeters, ejection fractions, gestational age in
+  project: <strong>78.4% of the radiology reports contain quantitative clinical measurements written
+  into the prose</strong>: ventricular widths in millimeters, ejection fractions, gestational age in
   weeks.</p>
 
   <p>A radiologist has already measured a child's lateral ventricular atrial width at 12.4 mm. That
-  number sits in the third sentence of a paragraph. Which makes it, at the same time, invisible to
+  number sits in the third sentence of a paragraph, which makes it, at the same time, invisible to
   search and unsafe to share, because free-text reports are the densest concentration of identifying
   information in the record.</p>
 
-  <p>Today a researcher can search for <em>"fetal MRI."</em> They cannot search for
+  <p>Today a researcher can search for <em>"pediatric brain MRI."</em> They cannot search for
   <em>"fetal MR with lateral ventricular atrial width over 10 mm"</em>, and 10 mm is not an
   arbitrary number, it is the diagnostic threshold for fetal ventriculomegaly.</p>
 
-  <p>Lantern extracts those measurements inside the hospital boundary and indexes the numbers. The
-  full report never leaves; what travels with a result is the measured value and a short evidence
-  snippet, so a clinician can check the number against the phrase it came from without receiving the
-  record. The researcher gains a search axis that does not exist anywhere today, and the hospital
-  releases strictly less free text than it does now.</p>
+  <p>Lantern extracts those measurements inside the hospital boundary, indexes the numbers, and
+  releases none of the sentences. The researcher gains a search axis that does not exist anywhere
+  today. The hospital exposes strictly less free text than it does now.</p>
 
   <div class="callout">
-    Privacy and utility usually trade against each other. Here they do not.
-    More useful, less exposed, because the compilation happens before anything leaves.
+    Privacy and utility usually trade against each other. Here they do not: more useful, less exposed,
+    because the compilation happens before anything leaves.
   </div>
 
-<h2>One index, three populations</h2>
+  <h2>Who it serves</h2>
 
-  <p>The same compiled passport serves three very different questions, and the interface answers each
-  one differently. Redaction is decided on the server by role, so what a person sees is determined by
-  who they are rather than by what their browser asks for.</p>
-
-  <figure class="diagram">
-    <img src="audiences.svg" alt="The same Study Passport is served at three tiers: patients see plain-language conditions and broad age bands, computational researchers see queryable measurements with provenance, physicians see comparable cases and a route to the data owner. Full source data is served to nobody.">
-    <figcaption>Full source data is served to nobody. Every request for it routes to the hospital that
-    owns the study and writes an append-only audit entry.</figcaption>
-  </figure>
-
-  <p><a href="for-researchers.html"><strong>Computational researchers</strong></a> get the axis that
-  does not exist elsewhere. They can filter by measured value rather than by keyword, see the sentence
-  each number came from, and read a field on every passport naming what the data cannot support.</p>
-
-  <p><a href="for-physicians.html"><strong>Physicians</strong></a> get to find comparable cases across
-  institutions, with research similarity held firmly apart from clinical evidence and labelled as
-  such. Requests for a study route to the owning hospital, and no source data moves automatically.</p>
-
-  <p><a href="for-patients.html"><strong>Patients and families</strong></a> get plain language, an
-  honest answer about whether their condition is being studied, and counts that deliberately stop
-  being precise when precision would identify a child. Access to their own images is a separate,
-  authenticated path through the hospital, because a right of access is not a research disclosure.</p>
+  <div class="who-grid">
+    <div class="who-card">
+      <img src="assets/images/icon-researchers.png" alt="" loading="lazy">
+      <p><strong>Computational researchers</strong> get quantitative cohort discovery: filter by measured
+      values, see acquisition context, and understand what is missing before committing to a study.</p>
+    </div>
+    <div class="who-card">
+      <img src="assets/images/icon-clinicians.png" alt="" loading="lazy">
+      <p><strong>Clinicians</strong> get to find comparable cases across institutions, with research
+      similarity kept clearly separate from clinical evidence.</p>
+    </div>
+    <div class="who-card">
+      <img src="assets/images/icon-families.png" alt="" loading="lazy">
+      <p><strong>Patients and families</strong> are the reason any of this matters. Today's build is the
+      researcher- and hospital-facing half: search, passport, petition, audit. A plain-language view for a
+      family asking <em>"is my child's case represented in research?"</em> is a natural extension of the
+      same passport, not something a five-hour build attempts. Their existing right of access to their own
+      images is separate from research disclosure regardless, and stays that way.</p>
+    </div>
+  </div>
 
   <h2>Who built it</h2>
 
@@ -141,7 +151,12 @@
   de-identification evidence rather than the search box: in this domain, the thing that has to be
   right is the part nobody sees.</p>
 
-  <p>The source is open under the MIT license, and no real patient data was used at any point, deliberately, on day one.</p>
+  <p>The source is open under the MIT license. No real patient data was used at any point; every
+  record here is synthetic, deliberately, on day one.</p>
+
+  <p>Curious how the compiler and search actually work? Read <a href="how-it-works.html">how it
+  works</a>. Deciding whether to trust it with real data? Read
+  <a href="privacy.html">privacy &amp; compliance</a>.</p>
 
 </article>
 </main>

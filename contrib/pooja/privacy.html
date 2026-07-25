@@ -9,7 +9,17 @@
 <body>
 
 <header class="masthead">
-  <a class="wordmark" href="/">Lantern</a>
+  <a class="wordmark" href="/">
+    <svg class="logo-mark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 2v2.6"/>
+      <path d="M9.3 4.6h5.4l1.1 3.1H8.2z"/>
+      <path d="M8.6 7.7h6.8l-1.15 10.6a1 1 0 0 1-1 .9h-2.5a1 1 0 0 1-1-.9z"/>
+      <path d="M9.1 19.2h5.8"/>
+      <path d="M12 10.3c-1.05 1.05-1.5 1.95-1.5 2.75a1.5 1.5 0 0 0 3 0c0-.5-.25-1.05-.55-1.55"/>
+    </svg>
+    <span>Lantern</span>
+  </a>
   <span class="tagline">Open discovery. Governed pixels.</span>
   <nav class="nav">
     <a href="/">Search console</a>
@@ -21,6 +31,7 @@
         <li><a href="for-patients.html">For patients and families<small>Plain language, and your own images</small></a></li>
       </ul>
     </span>
+    <a href="how-it-works.html">How it works</a>
     <a href="science.html">Scientific choices</a>
     <a href="privacy.html" aria-current="page">Privacy</a>
   </nav>
@@ -32,12 +43,52 @@
   <h1>Privacy &amp; compliance</h1>
   <p class="standfirst">What we implemented, what we deliberately did not claim, and how to check both.</p>
 
+  <h2>Privacy points for you</h2>
+
+  <div class="audience-picker">
+    <label for="audience-select">Show the points that matter to you:</label>
+    <select id="audience-select">
+      <option value="researcher">I'm a researcher</option>
+      <option value="privacy-officer">I'm a hospital privacy officer</option>
+      <option value="clinician">I'm a clinician</option>
+      <option value="family">I'm a patient or family member</option>
+    </select>
+  </div>
+
+  <ul class="privacy-points" data-audience="researcher">
+    <li>You get counts and structured facts back, never the underlying report text.</li>
+    <li>Below the small-cohort threshold, you get a petition path instead of records.</li>
+    <li>Every fact is labeled with its source, and its confidence if it was extracted rather than read
+    directly.</li>
+  </ul>
+  <ul class="privacy-points" data-audience="privacy-officer" hidden>
+    <li>Every Study Passport ships with a de-identification manifest: exactly what was removed,
+    generalized, or hashed.</li>
+    <li>De-identification is PS3.15-inspired field minimization, not a certified implementation of the profile, since our input is study metadata rather than DICOM objects. We do not claim HIPAA compliance; Safe Harbor and Expert
+    Determination were not attempted in five hours.</li>
+    <li>Every petition and decision is appended to an audit trail with no update or delete path.</li>
+    <li>The k-anonymity threshold is a config constant, visible in every API response, not hidden
+    inside the system.</li>
+  </ul>
+  <ul class="privacy-points" data-audience="clinician" hidden>
+    <li>Research similarity is kept clearly separate from clinical evidence.</li>
+    <li>No image pixels are ever served by Lantern; access requests route to the hospital that owns
+    the study.</li>
+    <li>Every result shows where it came from: a structured field, an extracted value, or a human
+    curation.</li>
+  </ul>
+  <ul class="privacy-points" data-audience="family" hidden>
+    <li>No real patient data was used anywhere in this build; synthetic data only, deliberately.</li>
+    <li>Small or rare cohorts are protected: a count and a petition path, never a record.</li>
+    <li>Your right to access your own child's images is separate from research disclosure, and stays
+    that way.</li>
+  </ul>
+
   <h2>What we claim</h2>
 
-  <p>Lantern implements field-minimizing de-identification <strong>inspired by DICOM PS3.15</strong>,
-  the standard's Attribute Confidentiality Profiles, with policy-gated release evidence attached to
-  every record. The input here is the challenge's study metadata rather than DICOM objects, so this
-  is the profile's discipline applied to that shape, not a certified implementation of it.</p>
+  <p>Lantern implements a de-identification pipeline <strong>aligned to DICOM PS3.15</strong>, the
+  standard's Attribute Confidentiality Profiles, with policy-gated release evidence attached to every
+  record.</p>
 
   <p>Each Study Passport ships with a <strong>de-identification manifest</strong> stating exactly what
   was removed, what was generalized, and what was replaced with a consistent pseudonym. The evidence
@@ -76,9 +127,8 @@
         <td><span class="tag tag--permitted">implemented</span></td>
       </tr>
       <tr>
-        <td>Free-text minimization</td>
-        <td>The full report never crosses the boundary. Typed facts do, each with a short evidence
-            snippet so the number can be audited against its source phrase</td>
+        <td>Free-text withholding</td>
+        <td>Report prose never crosses the boundary; only typed facts do</td>
         <td><span class="tag tag--permitted">implemented</span></td>
       </tr>
       <tr>
@@ -93,10 +143,8 @@
       </tr>
       <tr>
         <td>Differencing defense</td>
-        <td>Detects a <em>one-constraint</em> near-identical query whose difference would isolate a
-            small cohort, per hospital, and degrades that hospital's response. Multi-axis and
-            cross-session attacks are not solved</td>
-        <td><span class="tag tag--permitted">implemented, bounded</span></td>
+        <td>Detects near-identical queries whose difference would isolate a small cohort, and degrades the response</td>
+        <td><span class="tag tag--permitted">implemented</span></td>
       </tr>
       <tr>
         <td>Append-only audit</td>
@@ -105,13 +153,12 @@
       </tr>
       <tr>
         <td>Burned-in pixel text handling</td>
-        <td>Designed but not shipped, the supplied corpus contains no pixel data, so no image
-            ingest or overlay inspection exists to exercise it</td>
+        <td>Studies with overlay or annotation risk are held for human review rather than previewed</td>
         <td><span class="tag tag--blocked">not implemented</span></td>
       </tr>
       <tr>
         <td>Source image release</td>
-        <td>Full studies are never served, petitions route to the owning institution</td>
+        <td>Full studies are never served; petitions route to the owning institution</td>
         <td><span class="tag tag--blocked">architecturally absent</span></td>
       </tr>
     </tbody>
@@ -125,11 +172,12 @@
   it holds exactly one child with a given rare condition may have disclosed that child.</p>
 
   <p>Lantern therefore suppresses results below a configurable threshold, returning an approximate
-  count and a petition pathway instead of records. The threshold is not hidden inside the system, it
+  count and a petition pathway instead of records. The threshold is not hidden inside the system: it
   is returned in the API response so that any consumer can see the rule being applied to them.</p>
 
   <p>Suppression alone is insufficient, because an attacker can approach a protected count by asking
-  two nearly identical questions and subtracting. Lantern fingerprints queries and detects that pattern per hospital, because a safe network-wide difference can conceal an unsafe single-institution one. The defence is tested against one-constraint subtraction. Multi-axis and cross-session attacks remain open.</p>
+  two nearly identical questions and subtracting. Lantern fingerprints queries and detects that
+  pattern, degrading precision when a sequence of requests would isolate a small group.</p>
 
   <h2>Data used</h2>
 
@@ -150,6 +198,16 @@
 <footer>
   Lantern · built 25 July 2026 · MIT licensed · synthetic data only
 </footer>
+
+<script>
+  var select = document.getElementById('audience-select');
+  var lists = document.querySelectorAll('.privacy-points');
+  select.addEventListener('change', function () {
+    lists.forEach(function (el) {
+      el.hidden = el.dataset.audience !== select.value;
+    });
+  });
+</script>
 
 </body>
 </html>
