@@ -35,7 +35,10 @@ NODE_CONFIG: dict[str, dict[str, Any]] = {
     "MGH": {"file": "mgh_data.json", "label": "Mass General", "policy": "petition_required"},
     "BWH": {"file": "bwh_data.json", "label": "Brigham & Women's", "policy": "petition_required"},
 }
-DATA_DIR = Path(r"C:\Users\ajohn\hackdata\provider-node\data")
+# Where the provided provider-node corpus lives. Override on any other machine with
+# LANTERN_PROVIDER_DATA=/path/to/provider-node/data. If it's absent, the sidecar falls
+# back to the committed fixtures (still de-identified) and says so in /health.source.
+DATA_DIR = Path(os.environ.get("LANTERN_PROVIDER_DATA", r"C:\Users\ajohn\hackdata\provider-node\data"))
 
 NODE = os.environ.get("LANTERN_NODE", "BCH").upper()
 if NODE not in NODE_CONFIG:
