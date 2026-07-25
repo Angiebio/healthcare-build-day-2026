@@ -368,6 +368,15 @@ def health() -> dict[str, Any]:
     return {"ok": True, "service": "lantern-broker", "nodes": list(NODES)}
 
 
+# The content pages and the shared stylesheet, mounted at the path the console
+# actually asks for. The console links to ../../contrib/pooja/lantern.css, which
+# resolves to /contrib/pooja/lantern.css from the server root; without this mount
+# the console renders unstyled and every nav link to a content page 404s.
+# Mounted BEFORE the catch-all below, because the first matching mount wins.
+_PAGES = REPO / "contrib" / "pooja"
+if _PAGES.exists():
+    app.mount("/contrib/pooja", StaticFiles(directory=str(_PAGES), html=True), name="pages")
+
 # Serve the researcher console last, so API routes always win. index.html at "/".
 _STATIC = REPO / "app" / "static"
 if _STATIC.exists():
