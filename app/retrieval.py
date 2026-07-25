@@ -74,6 +74,41 @@ def _op_phrase(c: NumericConstraint) -> str:
     return f"{sym.get(c.op, c.op)} {c.value} {c.unit}"
 
 
+
+def _concept_surfaces(passport: dict[str, Any]) -> set[str]:
+    """Every term this passport can honestly be found by."""
+    out: set[str] = set()
+    for c in passport.get("concepts", []) or []:
+        display = (c or {}).get("display")
+        if isinstance(display, str) and display.strip():
+            out.add(display.strip().lower())
+    body = (passport.get("imaging") or {}).get("body_part_raw")
+    if isinstance(body, str):
+        out.add(body.strip().lower())
+    return out
+
+
+def _passes_text_terms(ast: QueryAST, passport: dict[str, Any]) -> tuple[bool, list[str]]:
+    """Match requested clinical terms against the passport's tagged concepts.
+
+    A term the query asked for and the passport does not carry is a hard
+    exclude, because a search box that returns everything when it understands
+    nothing is worse than one that returns nothing: it looks like it worked.
+
+    Matching is over concepts the compiler tagged at the node, never over report
+    prose, so this cannot widen what the trust boundary already released.
+    """
+    terms = [str(x).strip().lower() for x in (ast.clinical.text_terms or []) if str(x).strip()]
+    if not terms:
+        return True, []
+    surfaces = _concept_surfaces(passport)
+    hits = [
+        term for term in terms
+        if any(term == s or term in s or s in term for s in surfaces)
+    ]
+    return bool(hits), hits
+
+
 def evaluate(ast: QueryAST, passport: dict[str, Any]) -> dict[str, Any] | None:
     """Return a match dict (passport + why + scores) or None if the passport fails a hard filter."""
     imaging = passport.get("imaging", {})
@@ -126,6 +161,13 @@ def evaluate(ast: QueryAST, passport: dict[str, Any]) -> dict[str, Any] | None:
     if ast.numeric:
         signals.append("numeric_match")
 
+    # --- clinical terms requested by name (the natural-language path) ---
+    text_ok, matched_terms = _passes_text_terms(ast, passport)
+    if not text_ok:
+        return None
+    if matched_terms:
+        signals.append("clinical_term")
+
     # --- soft signals (never a silent exclude): measurement richness for tie-break ---
     richness = len(measurements)
 
@@ -137,6 +179,8 @@ def evaluate(ast: QueryAST, passport: dict[str, Any]) -> dict[str, Any] | None:
         parts.append(f"gestational age {population.get('gestational_age_weeks')} wk")
     elif "population_stage" in signals:
         parts.append(f"stage {population.get('pediatric_stage')}")
+    if matched_terms:
+        parts.append("clinical term " + ", ".join(matched_terms))
     for mm in matched_measurements:
         lat = f"{mm['laterality']} " if mm.get("laterality") else ""
         parts.append(f"{lat}{mm['quantity'].replace('_',' ')} {mm['value']} {mm['unit']} ({mm['constraint']})")

@@ -103,7 +103,12 @@ async def search(body: SearchBody) -> dict[str, Any]:
     # 2) Federated fan-out to the sidecars (never the raw nodes).
     async with httpx.AsyncClient() as client:
         node_results = await asyncio.gather(*[
-            _query_node(client, node, url, body.filters, layer) for node, url in NODES.items()
+            # Send the COMPILED ast, not the raw filters. The compiler lifts
+            # recognised clinical vocabulary out of the natural-language box into
+            # clinical.text_terms; forwarding raw filters threw that away, so the
+            # search box appeared to work and quietly searched for nothing.
+            _query_node(client, node, url, ast.model_dump(mode="json"), layer)
+            for node, url in NODES.items()
         ])
 
     # 3) Merge only what each node was permitted to return; note suppressed + dead nodes.

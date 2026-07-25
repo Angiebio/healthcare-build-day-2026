@@ -66,8 +66,39 @@ def test_every_emitted_concept_traces_to_the_curated_terminology_map() -> None:
     assert emitted
     assert any(concept["display"] == "ventriculomegaly" for concept in emitted)
     for concept in emitted:
-        assert concept["provenance"] == "curated"
-        assert _canonical_code(concept) in CURATED_CODE_SOURCES
+        # Two honest provenances, and the distinction is the point. A concept
+        # carrying a code was matched against the curated map, so that code must
+        # trace to a cited source. A concept recognised in report text but not
+        # coded says so: provenance report_extraction, code None. Emitting the
+        # term uncoded is what makes the clinical vocabulary searchable at all,
+        # and it is strictly better than inventing an identifier for it.
+        if concept.get("code") is None:
+            assert concept["provenance"] == "report_extraction"
+            assert concept["display"].strip()
+        else:
+            assert concept["provenance"] == "curated"
+            assert _canonical_code(concept) in CURATED_CODE_SOURCES
+
+
+def test_uncoded_report_terms_are_searchable_but_never_fabricate_a_code() -> None:
+    """The glioblastoma case: present in the report, absent from the coded map.
+
+    Before this, such a term was dropped entirely, so a report could state
+    glioblastoma and the passport carried nothing to find it by.
+    """
+    record = dict(_representative_record())
+    record["BodyPartExamined"] = "BRAIN"
+    record["Diagnosis"] = (
+        "MR imaging of the brain demonstrates a heterogeneously enhancing "
+        "intra-axial mass consistent with glioblastoma."
+    )
+    concepts = compile_passport("MGH", record)["concepts"]
+    match = next((c for c in concepts if c["display"] == "glioblastoma"), None)
+
+    assert match is not None, "recognised clinical terms must be indexed"
+    assert match["code"] is None
+    assert match["system"] is None
+    assert match["provenance"] == "report_extraction"
 
 
 def test_every_measurement_carries_release_evidence() -> None:

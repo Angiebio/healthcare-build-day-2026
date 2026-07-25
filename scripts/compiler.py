@@ -20,7 +20,7 @@ from typing import Any, Final
 from .age_band import pediatric_stage, public_age_band, to_age_years
 from .measure_extract import extract_measurements
 from .passport import CodedConcept, Passport
-from .terminology import Concept, CuratedTerminology
+from .terminology import CURATED_SURFACE_TERMS, Concept, CuratedTerminology
 
 NODE_LABELS: Final[dict[str, str]] = {
     "BCH": "Boston Children's",
@@ -224,6 +224,27 @@ def _report_concepts(report: str) -> list[dict[str, Any]]:
             continue
         emitted_codes.add(exact.code)
         concepts.append(_passport_concept(exact))
+
+    # Uncoded clinical vocabulary. A term the report states and the curated map
+    # recognises is indexed with an honest display name and NO code, rather than
+    # being dropped. Dropping it made the entire tumour vocabulary unsearchable:
+    # a report could say glioblastoma and the passport carried nothing to find it
+    # by. An uncoded concept says "the report stated this, we did not assign an
+    # identifier", which is true and useful. A fabricated code would be neither.
+    seen = {c["display"].casefold() for c in concepts}
+    for surface in CURATED_SURFACE_TERMS:
+        folded = surface.casefold()
+        if folded in seen or folded not in normalized:
+            continue
+        seen.add(folded)
+        concepts.append({
+            "system": None,
+            "code": None,
+            "display": surface,
+            "provenance": "report_extraction",
+            "confidence": None,
+            "relationship": "exact",
+        })
     return concepts
 
 

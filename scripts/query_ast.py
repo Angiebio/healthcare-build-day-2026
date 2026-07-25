@@ -231,6 +231,11 @@ def compile_query(nl_text: str | None, filters: dict[str, Any]) -> QueryAST:
     only the resulting validated AST reaches a provider node.
     """
 
+    if not isinstance(filters, dict):
+        raise QueryError("filters must be a dictionary")
+
+    filters = dict(filters)  # never mutate the caller's dictionary
+
     if nl_text is not None:
         if not isinstance(nl_text, str):
             raise QueryError("nl_text must be a string or None")
@@ -238,12 +243,45 @@ def compile_query(nl_text: str | None, filters: dict[str, Any]) -> QueryAST:
             _validate_safe_text(nl_text, "natural-language query", max_length=1_000)
         except ValueError as exc:
             raise QueryError(f"query rejected: {exc}") from exc
-    if not isinstance(filters, dict):
-        raise QueryError("filters must be a dictionary")
+
+        # Recognise curated clinical vocabulary in the text and lift it into
+        # `clinical.text_terms`. This is dictionary matching, not interpretation:
+        # a term the vocabulary does not contain is dropped, never guessed at,
+        # and explicit filters always win. Without this the box accepted input,
+        # looked like it worked, and silently searched for nothing.
+        recognised = _recognise_terms(nl_text)
+        if recognised:
+            clinical = dict(filters.get("clinical") or {})
+            existing = list(clinical.get("text_terms") or [])
+            for term in recognised:
+                if term not in existing:
+                    existing.append(term)
+            clinical["text_terms"] = existing
+            clinical.setdefault("expand_ontology", True)
+            filters["clinical"] = clinical
+
     try:
         return QueryAST.model_validate(filters)
     except Exception as exc:
         raise QueryError(f"query rejected: {exc}") from exc
+
+
+def _recognise_terms(text: str) -> list[str]:
+    """Curated surface terms present in the text, longest match first.
+
+    Deterministic and closed-vocabulary on purpose. The set of things this can
+    return is exactly the set of things the compiler can tag on a passport, so
+    the search box can never promise a concept the index does not carry.
+    """
+    from scripts.terminology import CURATED_SURFACE_TERMS
+
+    haystack = " " + " ".join(text.lower().split()) + " "
+    found: list[str] = []
+    for surface in sorted(CURATED_SURFACE_TERMS, key=len, reverse=True):
+        needle = f" {surface.lower()} "
+        if needle in haystack and not any(surface.lower() in f.lower() for f in found):
+            found.append(surface)
+    return found
 
 
 def _validate_safe_text(text: str, label: str, *, max_length: int) -> None:

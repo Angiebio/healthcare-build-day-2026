@@ -112,6 +112,11 @@ _DEFINITIONS: Final[dict[str, _Definition]] = {
         "low_grade_glioma", "low-grade glioma", ("low grade glioma",)
     ),
     "astrocytoma": _Definition("astrocytoma", "astrocytoma"),
+    "glioblastoma": _Definition(
+        "glioblastoma", "glioblastoma", ("glioblastoma multiforme", "gbm")
+    ),
+    "medulloblastoma": _Definition("medulloblastoma", "medulloblastoma"),
+    "ependymoma": _Definition("ependymoma", "ependymoma"),
     "mass": _Definition("mass", "mass"),
     "lesion": _Definition("lesion", "lesion"),
     # Hero-query condition. Both UK and US spelling occur in the reports.
@@ -221,6 +226,9 @@ _CLUSTERS: Final[tuple[_Cluster, ...]] = (
             ("glioma", "descendant"),
             ("low_grade_glioma", "descendant"),
             ("astrocytoma", "descendant"),
+            ("glioblastoma", "descendant"),
+            ("medulloblastoma", "descendant"),
+            ("ependymoma", "descendant"),
             ("mass", "related"),
             ("lesion", "related"),
         ),
