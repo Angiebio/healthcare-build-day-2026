@@ -318,3 +318,18 @@ input:focus, select:focus, textarea:focus {
   .rail { position: static; max-height: none; border-right: none;
           border-bottom: 1px solid var(--rule); }
 }
+
+/* The primary action sits at the top of the rail and stays there while the
+   filters scroll. It had been at the bottom, below a growing filter list,
+   which put "Search the network" off the fold on a laptop screen. */
+.rail-actions {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+}

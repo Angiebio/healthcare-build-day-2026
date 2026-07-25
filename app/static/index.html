@@ -17,7 +17,12 @@
   <span class="tagline">Open discovery. Governed pixels.</span>
   <nav class="nav">
     <a href="/" aria-current="page">Search console</a>
-    <a href="/contrib/pooja/about.html">About</a>
+    <span class="menu"><button type="button" aria-haspopup="true">About</button>
+      <ul>
+        <li><a href="/contrib/pooja/about.html">About Lantern<small>The problem, the approach, the team</small></a></li>
+        <li><a href="/contrib/pooja/judges-guide.html">Judges guide<small>Why it's innovative, and how to verify it</small></a></li>
+      </ul>
+    </span>
     <span class="menu"><button type="button" aria-haspopup="true">Who it serves</button>
       <ul>
         <li><a href="/contrib/pooja/for-researchers.html">For computational researchers<small>Queryable measurements, cohort discovery</small></a></li>
@@ -49,6 +54,11 @@
 
   <!-- ============ FILTER RAIL ============ -->
   <aside class="rail">
+    <div class="rail-actions">
+      <button class="btn btn--wide" id="run">Search the network</button>
+      <button class="btn btn--ghost btn--wide btn--sm" id="reset">Reset filters</button>
+    </div>
+
     <h2>Natural language</h2>
     <div class="field">
       <input type="text" id="nl" placeholder="fetal ventriculomegaly over 10 mm"
@@ -131,13 +141,6 @@
       <label class="check">
         <input type="checkbox" id="diversify"> Optimise cohort for site diversity
       </label>
-    </div>
-
-    <div class="field" style="margin-top:1.25rem">
-      <button class="btn btn--wide" id="run">Search the network</button>
-    </div>
-    <div class="field">
-      <button class="btn btn--ghost btn--wide btn--sm" id="reset">Reset filters</button>
     </div>
 
     <h2>Demo ladder</h2>
