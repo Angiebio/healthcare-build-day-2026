@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scientific choices · Lantern</title>
+  <link rel="stylesheet" href="lantern.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="/">Lantern</a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="/">Search</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html">How it works</a>
+    <a href="science.html" aria-current="page">Scientific choices</a>
+    <a href="privacy.html">Privacy &amp; compliance</a>
+  </nav>
+</header>
+
+<main>
+<article class="prose">
+
+  <h1>Scientific choices</h1>
+  <p class="standfirst">Every design decision below was made against measured properties of the data
+  rather than assumptions about it. Where we chose wrong at first, that is recorded too.</p>
+
+  <h2>We profiled before we designed</h2>
+
+  <p>The first work on this project was not architecture. It was measurement. We characterised the
+  supplied corpus of 2,700 studies across three simulated hospital nodes before writing a line of
+  system code, and what we found redirected the entire build.</p>
+
+  <p>Two properties mattered. First, the corpus contains no pixel data and no acquisition parameters.
+  There is no field strength, no repetition or echo time, no slice geometry, no reconstruction kernel.
+  Every architecture we had sketched in advance assumed those fields, and every one of those designs
+  was therefore unbuildable. Radiomic features, image embeddings, and similarity search all depend on
+  data this corpus does not contain.</p>
+
+  <p>Second, and far more useful, <strong>78.4 percent of the radiology reports carry quantitative
+  clinical measurements written into the prose</strong>. Ventricular atrial widths in millimetres.
+  Ejection fractions as percentages. Gestational age in weeks. Lesion dimensions in centimetres.</p>
+
+  <div class="callout">
+    A radiologist had already measured a fetal lateral ventricular atrial width at 12.4 mm. The number
+    was sitting in the third sentence of a paragraph, which made it simultaneously unreachable by
+    search and unsafe to release.
+  </div>
+
+  <p>That observation became the thesis. The scientifically valuable content and the privacy hazard
+  were the same object, and separating them was the problem worth solving.</p>
+
+  <h2>Why extraction happens before disclosure, not after</h2>
+
+  <p>The intuitive privacy move is to delete the risky field. A free-text radiology report is the
+  densest concentration of identifying information in an imaging record, so removing it protects the
+  patient. It also destroys the research value, because the measurements live inside it.</p>
+
+  <p>Compiling resolves that dilemma. The extraction runs inside the institution, where the sensitive
+  text is already lawfully held, and only the derived facts are eligible to leave. The result is a
+  system where utility increases while exposure decreases, which is unusual, and it happens for a
+  structural reason rather than a clever one. We are not choosing a better point on a tradeoff curve.
+  We are computing before discarding instead of after.</p>
+
+  <h2>Deterministic where correctness matters</h2>
+
+  <p>Everything that decides what gets released is plain, tested Python. Measurement parsing, unit
+  normalisation, age generalisation, the k-anonymity threshold, the disclosure guard, and the release
+  policy are all deterministic functions with unit tests. None of them involve a model.</p>
+
+  <p>This is a deliberate stance about where machine learning belongs in a regulated workflow. A
+  language model is well suited to interpretation and to language. It is poorly suited to being the
+  component that decides whether a child's record may be disclosed, because its behaviour cannot be
+  enumerated, tested exhaustively, or explained to a privacy officer in terms they can audit.</p>
+
+  <p>So the boundary is drawn explicitly. Deterministic code holds every decision with a consequence.
+  Any model in the system operates strictly downstream of those decisions, on numbers it did not
+  compute, and it cannot alter what was released.</p>
+
+  <h2>Provenance as a first-class field</h2>
+
+  <p>Every extracted fact records where it came from, what confidence the extractor assigned, and the
+  exact phrase it was taken from. A measurement parsed from prose is labelled as such and never
+  presented in the same visual register as a value read from a structured field.</p>
+
+  <p>In clinical research the difference between a documented finding and a software inference is the
+  difference between evidence and a hypothesis. A system that blurs them produces results nobody
+  should act on. Because the source phrase travels with the number, a clinician can adjudicate any
+  single value in about two seconds, which is what makes the extracted axis usable rather than merely
+  impressive.</p>
+
+  <h2>Small cohorts are the hard case, and they are the point</h2>
+
+  <p>In pediatric and rare disease research, scientific value and re-identification risk rise together.
+  The cohorts most worth finding are the ones most easily identified. A node reporting exactly one
+  patient with a rare presentation may have disclosed that patient.</p>
+
+  <p>Lantern suppresses results below a configurable k-anonymity threshold and returns a count band
+  with a petition pathway instead of records. The threshold is returned in every API response rather
+  than hidden inside the system, so any consumer can see the rule being applied to them.</p>
+
+  <p>Suppression alone is insufficient. An attacker can approach a protected count by asking two
+  nearly identical questions and subtracting. Our defence fingerprints queries and detects that
+  pattern, and it does so <strong>per hospital rather than across the network</strong>, because a safe
+  federation-wide difference can conceal an unsafe single-institution one. In our own data a pair
+  differing by one constraint isolated nine studies at one hospital while the network-wide difference
+  was seventeen, comfortably above the threshold. Assessed federation-wide the attack succeeds.
+  Assessed per node it is caught.</p>
+
+  <div class="callout">
+    Disclosure risk belongs to a hospital cohort, not to the federation's sum. Getting that wrong is
+    an easy mistake to make and an expensive one to discover later.
+  </div>
+
+  <h2>Statistical honesty about what we measured</h2>
+
+  <p>We built the naive baseline and ran it rather than asserting an advantage. Literal keyword search
+  over the same corpus recovers between 60 and 72 percent of the studies our compiled index finds for
+  a reduced ejection fraction query, at precision between 9 and 24 percent, because words like reduced
+  and severe attach to many findings.</p>
+
+  <p>For threshold queries we report the baseline as <strong>not expressible</strong> rather than as
+  recall of zero. That distinction is deliberate and it is the heart of the argument. A keyword search
+  does not perform poorly at ordering a measurement. It cannot express the question.</p>
+
+  <p>Our evaluation also records a case where plain keyword matching is more precise than our curated
+  ontology expansion. We left that finding in, because a comparison that only flatters its author is
+  not a measurement.</p>
+
+  <h2>Where we were wrong</h2>
+
+  <p>Our original demonstration query filtered for pediatric brain studies with an atrial width above
+  10 mm. Run against the real data it returned nothing at all, for two reasons we had not checked.
+  Atrial width is a fetal measurement rather than a general brain one, and two of the three nodes hold
+  no pediatric patients.</p>
+
+  <p>The corrected query is stronger than the original. Fetal lateral ventricular atrial width above
+  10 mm is the diagnostic threshold for fetal ventriculomegaly, so it is a question a fetal medicine
+  specialist recognises immediately, and it is well represented across all three institutions. The
+  severity stratification that follows from it (mild, moderate, severe) is clinically standard and
+  produces genuinely small cohorts, which means our privacy demonstration runs on real clinical
+  structure rather than a contrived filter.</p>
+
+  <p>A related error is worth recording because it is the kind a domain expert catches instantly.
+  Fetal studies in this corpus carry the mother's age in the patient age field. Banding that
+  chronologically labels a fetus an adult. Passports now derive gestational age from the report and
+  state which basis was used, and the system says unknown rather than guessing.</p>
+
+  <h2>What we did not build</h2>
+
+  <p>No image analysis, because there are no images. No acquisition-parameter indexing, because those
+  fields are absent. No language model in the request path, so natural-language input is validated
+  rather than interpreted. No live retrieval endpoint, so approval returns a simulated grant. Burned-in
+  pixel text handling is designed and not shipped, because nothing in this corpus can exercise it.</p>
+
+  <p>Each passport carries a field listing what it cannot support. A researcher deciding whether to
+  commit six months to a cohort is better served by an accurate inventory than an impressive one, and
+  naming the gap is what separates a research instrument from a demonstration.</p>
+
+</article>
+</main>
+
+<footer>
+  Lantern · built 25 July 2026 · MIT licensed · synthetic data only
+</footer>
+
+</body>
+</html>

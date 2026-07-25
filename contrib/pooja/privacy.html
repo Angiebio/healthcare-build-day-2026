@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Privacy &amp; compliance — Lantern</title>
+  <title>Privacy &amp; compliance · Lantern</title>
   <link rel="stylesheet" href="lantern.css">
 </head>
 <body>
@@ -15,6 +15,7 @@
     <a href="/">Search</a>
     <a href="about.html">About</a>
     <a href="how-it-works.html">How it works</a>
+    <a href="science.html">Scientific choices</a>
     <a href="privacy.html" aria-current="page">Privacy &amp; compliance</a>
   </nav>
 </header>
@@ -30,7 +31,7 @@
   <p>Lantern implements field-minimizing de-identification <strong>inspired by DICOM PS3.15</strong>,
   the standard's Attribute Confidentiality Profiles, with policy-gated release evidence attached to
   every record. The input here is the challenge's study metadata rather than DICOM objects, so this
-  is the profile's discipline applied to that shape — not a certified implementation of it.</p>
+  is the profile's discipline applied to that shape, not a certified implementation of it.</p>
 
   <p>Each Study Passport ships with a <strong>de-identification manifest</strong> stating exactly what
   was removed, what was generalized, and what was replaced with a consistent pseudonym. The evidence
@@ -75,7 +76,7 @@
       </tr>
       <tr>
         <td>Generalization</td>
-        <td>Exact age to developmental band; dates consistently shifted</td>
+        <td>Exact age becomes a developmental band. Study dates are dropped entirely, since these are single-study patients with no intervals worth preserving</td>
         <td><span class="tag tag--permitted">implemented</span></td>
       </tr>
       <tr>
@@ -97,13 +98,13 @@
       </tr>
       <tr>
         <td>Burned-in pixel text handling</td>
-        <td>Designed but not shipped — the supplied corpus contains no pixel data, so no image
+        <td>Designed but not shipped, the supplied corpus contains no pixel data, so no image
             ingest or overlay inspection exists to exercise it</td>
         <td><span class="tag tag--blocked">not implemented</span></td>
       </tr>
       <tr>
         <td>Source image release</td>
-        <td>Full studies are never served — petitions route to the owning institution</td>
+        <td>Full studies are never served, petitions route to the owning institution</td>
         <td><span class="tag tag--blocked">architecturally absent</span></td>
       </tr>
     </tbody>
@@ -116,12 +117,11 @@
   it holds exactly one child with a given rare condition may have disclosed that child.</p>
 
   <p>Lantern therefore suppresses results below a configurable threshold, returning an approximate
-  count and a petition pathway instead of records. The threshold is not hidden inside the system — it
+  count and a petition pathway instead of records. The threshold is not hidden inside the system, it
   is returned in the API response so that any consumer can see the rule being applied to them.</p>
 
   <p>Suppression alone is insufficient, because an attacker can approach a protected count by asking
-  two nearly identical questions and subtracting. Lantern fingerprints queries and detects that
-  pattern, degrading precision when a sequence of requests would isolate a small group.</p>
+  two nearly identical questions and subtracting. Lantern fingerprints queries and detects that pattern per hospital, because a safe network-wide difference can conceal an unsafe single-institution one. The defence is tested against one-constraint subtraction. Multi-axis and cross-session attacks remain open.</p>
 
   <h2>Data used</h2>
 
@@ -132,7 +132,7 @@
   <h2>Verifying these claims</h2>
 
   <p>The source is public and MIT licensed. The de-identification logic, the disclosure guard, and the
-  suppression threshold are plain, tested functions rather than model behavior — deliberately, so they
+  suppression threshold are plain, tested functions rather than model behavior, deliberately, so they
   can be read, tested, and disproven. Every control described on this page corresponds to code you can
   inspect and a test you can run.</p>
 

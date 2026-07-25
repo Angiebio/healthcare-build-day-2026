@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>About — Lantern</title>
+  <title>About · Lantern</title>
   <link rel="stylesheet" href="lantern.css">
 </head>
 <body>
@@ -15,6 +15,7 @@
     <a href="/">Search</a>
     <a href="about.html" aria-current="page">About</a>
     <a href="how-it-works.html">How it works</a>
+    <a href="science.html">Scientific choices</a>
     <a href="privacy.html">Privacy &amp; compliance</a>
   </nav>
 </header>
@@ -23,14 +24,14 @@
 <article class="prose">
 
   <h1>Finding the scans without moving them</h1>
-  <p class="standfirst">A child's MRI can help thousands of other children — but only if a researcher
+  <p class="standfirst">A child's MRI can help thousands of other children, but only if a researcher
   can find it, and only if finding it never puts that child's privacy at risk.</p>
 
   <h2>The problem</h2>
 
   <p>A child is treated for a brain tumor. Every few months there is another MRI, and a family waits
   to hear whether it has grown. Researchers want to build tools that measure those changes more
-  consistently than any single clinician can. To do that well, they need examples — from many
+  consistently than any single clinician can. To do that well, they need examples, from many
   children, many scanners, many hospitals, many stages of disease.</p>
 
   <p>Pediatric brain tumors are uncommon. No single hospital holds enough cases. The scans very likely
@@ -38,7 +39,7 @@
   find out where.</p>
 
   <p>So researchers approach hospitals one at a time. They spend months on introductions, approvals,
-  and study descriptions before they learn whether enough suitable data even exists — let alone
+  and study descriptions before they learn whether enough suitable data even exists, let alone
   receive authorization to look at it. Meanwhile every hospital is doing the right thing: protecting
   patients under federal, state, contractual, and institutional obligations that do not permit
   gathering everything in one place.</p>
@@ -50,8 +51,7 @@
 
   <p>Lantern separates those two questions.</p>
 
-  <p>Each hospital compiles its own studies into a de-identified <strong>Study Passport</strong> —
-  a structured description of what a scan contains and what it can support, generated
+  <p>Each hospital compiles its own studies into a de-identified <strong>Study Passport</strong>, a structured description of what a scan contains and what it can support, generated
   <em>inside the hospital's own boundary</em>. Only the passport travels. The images never do.</p>
 
   <p>A researcher searches across the network, sees what exists and where, and evaluates whether the
@@ -61,23 +61,23 @@
 
   <div class="callout">
     Existing systems ask <em>"may I have the scan?"</em> Lantern asks <em>"what does the scan already
-    know — and how much of that can you have right now, without the scan moving at all?"</em>
+    know, and how much of that can you have right now, without the scan moving at all?"</em>
   </div>
 
   <h2>What we found in the data</h2>
 
   <p>Before designing anything, we measured the corpus we were given. One finding reshaped the entire
   project: <strong>78% of the radiology reports contain quantitative clinical measurements written
-  into the prose</strong> — ventricular widths in millimeters, ejection fractions, gestational age in
+  into the prose</strong>, ventricular widths in millimeters, ejection fractions, gestational age in
   weeks.</p>
 
   <p>A radiologist has already measured a child's lateral ventricular atrial width at 12.4 mm. That
   number sits in the third sentence of a paragraph. Which makes it, at the same time, invisible to
-  search and unsafe to share — because free-text reports are the densest concentration of identifying
+  search and unsafe to share, because free-text reports are the densest concentration of identifying
   information in the record.</p>
 
   <p>Today a researcher can search for <em>"fetal MRI."</em> They cannot search for
-  <em>"fetal MR with lateral ventricular atrial width over 10 mm"</em> — and 10 mm is not an
+  <em>"fetal MR with lateral ventricular atrial width over 10 mm"</em>, and 10 mm is not an
   arbitrary number, it is the diagnostic threshold for fetal ventriculomegaly.</p>
 
   <p>Lantern extracts those measurements inside the hospital boundary and indexes the numbers. The
@@ -88,12 +88,12 @@
 
   <div class="callout">
     Privacy and utility usually trade against each other. Here they do not.
-    More useful, less exposed — because the compilation happens before anything leaves.
+    More useful, less exposed, because the compilation happens before anything leaves.
   </div>
 
   <h2>Who it serves</h2>
 
-  <p><strong>Computational researchers</strong> get quantitative cohort discovery — filter by measured
+  <p><strong>Computational researchers</strong> get quantitative cohort discovery, filter by measured
   values, and see plainly what is missing before committing to a study. Every passport carries a field
   listing what this data cannot support, which for the supplied corpus includes acquisition
   parameters and pixel data.</p>
@@ -102,7 +102,7 @@
   similarity kept clearly separate from clinical evidence.</p>
 
   <p><strong>Patients and families</strong> get a plain-language view of whether their condition is
-  represented in research, and a distinct, properly authorized path to their own images — which is a
+  represented in research, and a distinct, properly authorized path to their own images, which is a
   right of access, not a research disclosure, and is treated as such.</p>
 
   <h2>Who built it</h2>
@@ -116,8 +116,7 @@
   de-identification evidence rather than the search box: in this domain, the thing that has to be
   right is the part nobody sees.</p>
 
-  <p>The source is open under the MIT license, and no real patient data was used at any point —
-  deliberately, on day one.</p>
+  <p>The source is open under the MIT license, and no real patient data was used at any point, deliberately, on day one.</p>
 
 </article>
 </main>
