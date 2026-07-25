@@ -17,7 +17,7 @@ working tickets, published as-is.
 Two habits did most of the work, and both are visible in the code:
 
 **Profile the data before designing anything.** The first thing we did was measure the corpus rather
-than assume its shape. That is where the 76%-of-reports-carry-measurements finding came from, and it
+than assume its shape. That is where the 78.4%-of-reports-carry-measurements finding came from, and it
 overturned our own pre-event architecture — which had assumed pixel data that does not exist in this
 dataset. `process/design-decisions.md` is the record of that reversal.
 
