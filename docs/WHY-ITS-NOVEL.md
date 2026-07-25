@@ -122,7 +122,7 @@ from a demo."*
 
 1. **We compute before we discard, so utility rises while exposure falls.** That ordering is the
    whole invention.
-2. **Disclosure risk is per hospital, not per network** — and we can show the exact query pair that
+2. **Disclosure risk is per hospital, not per network**, and we can show the exact query pair that
    proves it.
 3. **We published our own failures and a benchmark we lose.** In a room full of privacy claims, the
    team that names its limits is the one to believe.
