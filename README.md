@@ -34,7 +34,9 @@ So today you can search *"fetal MRI."* You cannot search
 ## What Lantern does
 
 Each hospital compiles its studies into de-identified **Study Passports** *inside its own trust
-boundary*. The measurements become a structured, queryable axis. The prose never leaves.
+boundary*. The measurements become a structured, queryable axis. **The full report never leaves the
+node** — what crosses is the measured value plus a bounded evidence snippet, so a researcher can
+audit the number against the phrase it came from without receiving the record.
 
 **Utility goes up while exposure goes down.** That is not a tradeoff — it's a compiler.
 
@@ -55,15 +57,25 @@ entry. The hospital remains the enforcement point.
 
 ## Privacy controls
 
-- **PS3.15-aligned de-identification** with a per-study manifest showing exactly what was removed,
-  generalized, and hashed. The evidence travels with the data.
+- **Field-minimizing de-identification, PS3.15-inspired** — direct identifiers removed or
+  pseudonymized, ages generalized, with a per-study manifest recording what was removed,
+  generalized, and pseudonymized. The evidence travels with the data. *(Our input is the challenge's
+  JSON metadata rather than DICOM objects, so this is the profile's field-minimization discipline
+  applied to that shape — not a certified PS3.15 implementation.)*
 - **k-anonymity suppression** on small cohorts — the threshold is a config constant surfaced in every
   API response. Transparent, not hidden. Fails closed.
-- **Differencing-attack defense** — canonical query fingerprints detect an attacker subtracting two
-  near-identical queries to isolate a rare cohort, and degrade the response.
-- **Provenance on every fact** — each field is stamped `native_tag`, `report_extraction` (with a
-  confidence and the source snippet), or `curated`. A model guess never wears a clinical fact's
-  clothes.
+- **Differencing-attack defense** — canonical query fingerprints, held **per hospital** because a
+  safe network total can hide an unsafe single-node delta. **Tested against one-constraint
+  subtraction**; multi-axis and cross-session attacks are named limitations, not solved problems.
+- **Provenance on extracted facts** — every measurement and concept carries its source
+  (`report_extraction` with confidence and snippet, or `curated`). A model guess never wears a
+  clinical fact's clothes.
+
+**Not implemented, and deliberately not claimed:** no LLM is in the request path (natural-language
+input is *validated*, never interpreted — see `scripts/query_ast.py`); no image embeddings, no
+acquisition-parameter indexing, and no similarity search, because the supplied corpus contains no
+pixel data or acquisition fields; approval returns a **simulated retrieval grant**, not a live
+retrieval endpoint.
 
 ## Honest claims
 

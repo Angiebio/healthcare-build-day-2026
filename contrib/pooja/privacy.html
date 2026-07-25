@@ -27,9 +27,10 @@
 
   <h2>What we claim</h2>
 
-  <p>Lantern implements a de-identification pipeline <strong>aligned to DICOM PS3.15</strong>, the
-  standard's Attribute Confidentiality Profiles, with policy-gated release evidence attached to every
-  record.</p>
+  <p>Lantern implements field-minimizing de-identification <strong>inspired by DICOM PS3.15</strong>,
+  the standard's Attribute Confidentiality Profiles, with policy-gated release evidence attached to
+  every record. The input here is the challenge's study metadata rather than DICOM objects, so this
+  is the profile's discipline applied to that shape — not a certified implementation of it.</p>
 
   <p>Each Study Passport ships with a <strong>de-identification manifest</strong> stating exactly what
   was removed, what was generalized, and what was replaced with a consistent pseudonym. The evidence
@@ -67,8 +68,9 @@
         <td><span class="tag tag--permitted">implemented</span></td>
       </tr>
       <tr>
-        <td>Free-text withholding</td>
-        <td>Report prose never crosses the boundary; only typed facts do</td>
+        <td>Free-text minimization</td>
+        <td>The full report never crosses the boundary. Typed facts do, each with a short evidence
+            snippet so the number can be audited against its source phrase</td>
         <td><span class="tag tag--permitted">implemented</span></td>
       </tr>
       <tr>
@@ -83,8 +85,10 @@
       </tr>
       <tr>
         <td>Differencing defense</td>
-        <td>Detects near-identical queries whose difference would isolate a small cohort, and degrades the response</td>
-        <td><span class="tag tag--permitted">implemented</span></td>
+        <td>Detects a <em>one-constraint</em> near-identical query whose difference would isolate a
+            small cohort, per hospital, and degrades that hospital's response. Multi-axis and
+            cross-session attacks are not solved</td>
+        <td><span class="tag tag--permitted">implemented, bounded</span></td>
       </tr>
       <tr>
         <td>Append-only audit</td>
@@ -93,8 +97,9 @@
       </tr>
       <tr>
         <td>Burned-in pixel text handling</td>
-        <td>Studies with overlay or annotation risk are held for human review rather than previewed</td>
-        <td><span class="tag tag--review">held for review</span></td>
+        <td>Designed but not shipped — the supplied corpus contains no pixel data, so no image
+            ingest or overlay inspection exists to exercise it</td>
+        <td><span class="tag tag--blocked">not implemented</span></td>
       </tr>
       <tr>
         <td>Source image release</td>

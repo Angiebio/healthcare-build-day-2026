@@ -40,8 +40,8 @@
     <li><strong>Code the findings.</strong> Clinical concepts are mapped to standard vocabularies so a
       search for one term reaches equivalent terms at other institutions.</li>
     <li><strong>Generalize what remains.</strong> Exact birth date becomes a developmental stage and
-      an age band. Exact study dates are shifted consistently, preserving intervals while destroying
-      the calendar.</li>
+      an age band — and on fetal studies, where the recorded age is the mother's, the passport uses
+      gestational age from the report and says which basis it used.</li>
     <li><strong>Stamp provenance.</strong> Every field records where it came from.</li>
   </ol>
 
@@ -65,12 +65,15 @@
 
   <h2>Search</h2>
 
-  <p>A query — typed in natural language or built with filters — is compiled into a
-  <strong>validated query structure</strong> before anything executes. This is a deliberate security
-  boundary: a language model may <em>propose</em> an interpretation, but only deterministic validation
-  <em>disposes</em>. An unrecognized field, an unsupported operator, or an out-of-range value is
-  rejected outright rather than quietly adjusted. A silently dropped filter would be a privacy
-  failure, not an inconvenience.</p>
+  <p>A query is compiled into a <strong>validated query structure</strong> before anything executes.
+  An unrecognized field, an unsupported operator, or an out-of-range value is rejected outright rather
+  than quietly adjusted. A silently dropped filter would be a privacy failure, not an inconvenience.</p>
+
+  <p>There is deliberately <strong>no language model in the request path.</strong> The interface
+  accepts natural-language text and <em>validates</em> it; it does not interpret it. The architecture
+  is built so that a model could later propose an interpretation while deterministic validation
+  retains the power to dispose — but that adapter is future work, and today the filter path is the
+  only path.</p>
 
   <p>The validated query fans out to every hospital node in parallel. Each node evaluates it against
   its own records and its own release policy, and returns only what its policy permits. Results are

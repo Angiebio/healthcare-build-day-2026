@@ -76,12 +76,15 @@
   search and unsafe to share — because free-text reports are the densest concentration of identifying
   information in the record.</p>
 
-  <p>Today a researcher can search for <em>"pediatric brain MRI."</em> They cannot search for
-  <em>"lateral ventricular atrial width over 10 mm, in children under eight."</em></p>
+  <p>Today a researcher can search for <em>"fetal MRI."</em> They cannot search for
+  <em>"fetal MR with lateral ventricular atrial width over 10 mm"</em> — and 10 mm is not an
+  arbitrary number, it is the diagnostic threshold for fetal ventriculomegaly.</p>
 
-  <p>Lantern extracts those measurements inside the hospital boundary, indexes the numbers, and
-  releases none of the sentences. The researcher gains a search axis that does not exist anywhere
-  today. The hospital exposes strictly less free text than it does now.</p>
+  <p>Lantern extracts those measurements inside the hospital boundary and indexes the numbers. The
+  full report never leaves; what travels with a result is the measured value and a short evidence
+  snippet, so a clinician can check the number against the phrase it came from without receiving the
+  record. The researcher gains a search axis that does not exist anywhere today, and the hospital
+  releases strictly less free text than it does now.</p>
 
   <div class="callout">
     Privacy and utility usually trade against each other. Here they do not.
@@ -91,7 +94,9 @@
   <h2>Who it serves</h2>
 
   <p><strong>Computational researchers</strong> get quantitative cohort discovery — filter by measured
-  values, see acquisition context, understand what is missing before committing to a study.</p>
+  values, and see plainly what is missing before committing to a study. Every passport carries a field
+  listing what this data cannot support, which for the supplied corpus includes acquisition
+  parameters and pixel data.</p>
 
   <p><strong>Clinicians</strong> get to find comparable cases across institutions, with research
   similarity kept clearly separate from clinical evidence.</p>
