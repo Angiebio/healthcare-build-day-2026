@@ -7,6 +7,21 @@
   <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
   <meta name="theme-color" content="#22305c">
   <link rel="stylesheet" href="lantern.css">
+  <style>
+    /* Page-local: the architecture figure. */
+    figure.arch { margin: 1.6rem 0 2rem; }
+    figure.arch svg { width:100%; height:auto; display:block; }
+    figure.arch figcaption { color:#6b7591; font-size:.85rem; margin-top:.5rem; text-align:center; }
+    .novelty-key { list-style:none; padding:0; margin:1.2rem 0 0; display:grid; gap:.75rem; }
+    .novelty-key li { display:grid; grid-template-columns:1.7rem 1fr; gap:.7rem; align-items:start; }
+    .novelty-key .n { display:inline-grid; place-items:center; width:1.6rem; height:1.6rem;
+      border-radius:50%; background:#d98a2b; color:#fff; font-weight:700; font-size:.85rem; }
+    .novelty-key b { color:#22305c; }
+    @media (prefers-color-scheme: dark) {
+      figure.arch figcaption { color:#9aa6c4; }
+      .novelty-key b { color:#dfe6f6; }
+    }
+  </style>
 </head>
 <body>
 
@@ -40,32 +55,121 @@
   <h1>How it works</h1>
   <p class="standfirst">The method, for people who want to check our work.</p>
 
-  <div class="flow-row">
-    <div class="flow-node">
-      <img src="assets/flow/secure-network.svg" alt="">
-      <span>Secure hospital network</span>
-    </div>
-    <div class="flow-node">
-      <img src="assets/flow/deid-studies.svg" alt="">
-      <span>De-identified MRI studies</span>
-    </div>
-    <div class="flow-node">
-      <img src="assets/flow/study-passport.svg" alt="">
-      <span>Study Passport</span>
-    </div>
-    <div class="flow-node flow-node--center">
-      <img src="assets/flow/lantern-center.svg" alt="">
-      <span>Lantern</span>
-    </div>
-    <div class="flow-node">
-      <img src="assets/flow/researcher-search.svg" alt="">
-      <span>Researcher search</span>
-    </div>
-    <div class="flow-node">
-      <img src="assets/flow/families-patients.svg" alt="">
-      <span>Families &amp; patients</span>
-    </div>
-  </div>
+  <figure class="arch">
+    <svg viewBox="0 0 1000 470" role="img"
+         aria-label="Lantern architecture: each hospital node compiles its raw records into a de-identified Study Passport inside a trust boundary; only passports cross to the Lantern broker, which federates search, fuses ranks, and applies per-node k-anonymity and a differencing guard; results reach role-based lenses, and access to source data is petition-only with an append-only audit.">
+      <style>
+        .canvas{fill:#fbfcfe}
+        .bound{fill:none;stroke:#22305c;stroke-dasharray:6 5;stroke-width:1.4;opacity:.55}
+        .box{fill:#eef2fb;stroke:#22305c;stroke-width:1.3}
+        .accent{fill:#fff6e9;stroke:#d98a2b;stroke-width:1.7}
+        .broker{fill:#22305c}
+        .chip{fill:#eef2fb;stroke:#22305c;stroke-width:1.2}
+        .flow{stroke:#22305c;stroke-width:1.6;fill:none}
+        .zone{fill:#22305c;font:700 12px system-ui,-apple-system,sans-serif;letter-spacing:.4px}
+        .t{fill:#22305c;font:700 14px system-ui,-apple-system,sans-serif}
+        .ti{fill:#fff;font:700 15px system-ui,-apple-system,sans-serif}
+        .s{fill:#59637f;font:11px system-ui,-apple-system,sans-serif}
+        .si{fill:#c9d3ea;font:11px system-ui,-apple-system,sans-serif}
+        .note{fill:#8a93ab;font:italic 12px system-ui,-apple-system,sans-serif}
+        .lab{fill:#59637f;font:600 11px system-ui,-apple-system,sans-serif}
+        .ah{fill:#22305c}
+        .nov{fill:#d98a2b}
+        .novn{fill:#fff;font:700 12px system-ui,-apple-system,sans-serif}
+        @media (prefers-color-scheme:dark){
+          .canvas{fill:#0f1626}.bound{stroke:#8fa0cc}
+          .box{fill:#1b2640;stroke:#8fa0cc}.accent{fill:#3a2c12;stroke:#e0a63e}
+          .chip{fill:#1b2640;stroke:#8fa0cc}.flow{stroke:#8fa0cc}.ah{fill:#8fa0cc}
+          .zone,.t{fill:#dfe6f6}.s,.note,.lab{fill:#9aa6c4}
+        }
+      </style>
+      <defs>
+        <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" class="ah"/>
+        </marker>
+      </defs>
+      <rect class="canvas" x="6" y="18" width="988" height="444" rx="12"/>
+
+      <!-- ============ HOSPITAL NODE · trust boundary ============ -->
+      <text class="zone" x="34" y="46">HOSPITAL NODE · TRUST BOUNDARY  (×3: BCH · MGH · BWH)</text>
+      <rect class="bound" x="24" y="56" width="290" height="344" rx="12"/>
+
+      <rect class="box" x="52" y="74" width="234" height="48" rx="7"/>
+      <text class="t" x="169" y="96" text-anchor="middle">Raw record</text>
+      <text class="s" x="169" y="112" text-anchor="middle">direct identifiers + free-text report</text>
+      <line class="flow" x1="169" y1="122" x2="169" y2="148" marker-end="url(#ah)"/>
+
+      <rect class="accent" x="52" y="150" width="234" height="98" rx="7"/>
+      <text class="t" x="169" y="174" text-anchor="middle">Privacy–Utility Compiler</text>
+      <text class="s" x="169" y="194" text-anchor="middle">strip · extract · code · generalize · stamp</text>
+      <text class="s" x="169" y="210" text-anchor="middle">prose → typed, sourced facts</text>
+      <text class="s" x="169" y="228" text-anchor="middle">runs where the record already lives</text>
+      <circle class="nov" cx="274" cy="160" r="13"/><text class="novn" x="274" y="164" text-anchor="middle">1</text>
+      <line class="flow" x1="169" y1="248" x2="169" y2="274" marker-end="url(#ah)"/>
+
+      <rect class="box" x="52" y="276" width="234" height="48" rx="7"/>
+      <text class="t" x="169" y="298" text-anchor="middle">Study Passport</text>
+      <text class="s" x="169" y="314" text-anchor="middle">facts · codes · age bands — no prose</text>
+
+      <text class="note" x="169" y="366" text-anchor="middle">the report and any pixels never leave</text>
+
+      <!-- ============ crossing: only the passport ============ -->
+      <text class="lab" x="345" y="290" text-anchor="middle">only the passport crosses</text>
+      <line class="flow" x1="286" y1="300" x2="392" y2="300" marker-end="url(#ah)"/>
+      <circle class="nov" cx="345" cy="272" r="13"/><text class="novn" x="345" y="276" text-anchor="middle">2</text>
+
+      <!-- ============ LANTERN BROKER ============ -->
+      <rect class="broker" x="394" y="92" width="216" height="316" rx="10"/>
+      <text class="ti" x="502" y="122" text-anchor="middle">LANTERN BROKER</text>
+      <text class="si" x="502" y="162" text-anchor="middle">Validated query AST</text>
+      <text class="si" x="502" y="178" text-anchor="middle" opacity=".7" style="font-size:10px">LLM proposes · validator disposes</text>
+      <text class="si" x="502" y="216" text-anchor="middle">Federated fan-out · 3 nodes</text>
+      <text class="si" x="502" y="256" text-anchor="middle">Rank fusion + why</text>
+      <text class="si" x="502" y="298" text-anchor="middle">Disclosure policy</text>
+      <text class="si" x="502" y="314" text-anchor="middle" opacity=".85" style="font-size:10px">per-node k-anon · differencing guard</text>
+      <circle class="nov" cx="596" cy="300" r="13"/><text class="novn" x="596" y="304" text-anchor="middle">3</text>
+
+      <!-- ============ outputs ============ -->
+      <text class="lab" x="812" y="112" text-anchor="middle">Role lenses · server-side redaction</text>
+      <line class="flow" x1="610" y1="176" x2="694" y2="176" marker-end="url(#ah)"/>
+      <rect class="chip" x="700" y="122" width="224" height="36" rx="7"/>
+      <text class="t" x="812" y="145" text-anchor="middle">Researcher · L1 — full passport</text>
+      <rect class="chip" x="700" y="166" width="224" height="36" rx="7"/>
+      <text class="t" x="812" y="189" text-anchor="middle">Clinician · L2 — + owner contact</text>
+      <rect class="chip" x="700" y="210" width="224" height="36" rx="7"/>
+      <text class="t" x="812" y="233" text-anchor="middle">Patient · L0 — codes + existence</text>
+
+      <line class="flow" x1="610" y1="306" x2="694" y2="306" marker-end="url(#ah)"/>
+      <rect class="chip" x="700" y="286" width="224" height="40" rx="7"/>
+      <text class="t" x="812" y="311" text-anchor="middle">Petition · IRB + purpose</text>
+      <circle class="nov" cx="690" cy="306" r="13"/><text class="novn" x="690" y="310" text-anchor="middle">4</text>
+      <line class="flow" x1="812" y1="326" x2="812" y2="346" marker-end="url(#ah)"/>
+      <rect class="chip" x="726" y="348" width="172" height="32" rx="6"/>
+      <text class="s" x="812" y="368" text-anchor="middle" style="font-weight:600">Owning hospital node</text>
+      <line class="flow" x1="812" y1="380" x2="812" y2="398" marker-end="url(#ah)"/>
+      <rect class="chip" x="726" y="400" width="172" height="32" rx="6"/>
+      <text class="s" x="812" y="420" text-anchor="middle" style="font-weight:600">Append-only audit</text>
+    </svg>
+    <figcaption>The whole architecture. The four amber markers are what no existing catalogue does.</figcaption>
+  </figure>
+
+  <ol class="novelty-key">
+    <li><span class="n">1</span><span><b>The queryable axis is compiled from prose.</b> 78% of these
+      reports carry measurements written into sentences. We parse them into typed facts — value, unit,
+      and the exact source clause — <em>inside</em> the hospital boundary. A search axis that exists in
+      no catalogue today, and every fact is stamped with where it came from.</span></li>
+    <li><span class="n">2</span><span><b>Compute goes to the data.</b> Only the de-identified passport
+      crosses the boundary. The full report and any pixels never leave the node — so the thing that
+      travels is structurally incapable of carrying the text we removed.</span></li>
+    <li><span class="n">3</span><span><b>The hospital is the disclosure boundary.</b> k-anonymity fires
+      <em>per node</em>, not on a network total: sixteen severe cases exist across the three hospitals,
+      but no single hospital ever exposes its own sub-ten cohort. A differencing guard blocks the
+      subtract-two-queries attack. That is what makes this a federation, not a warehouse with a login.</span></li>
+    <li><span class="n">4</span><span><b>Source data is architecturally absent.</b> We never hold or
+      serve pixels. Access is petition-only, routed to the owning hospital with IRB and purpose, and
+      written to an audit trail with no update or delete path. You cannot misuse a capability the system
+      does not have.</span></li>
+  </ol>
 
   <h2>The compiler</h2>
 
@@ -82,8 +186,8 @@
     <li><strong>Code the findings.</strong> Clinical concepts are mapped to standard vocabularies so a
       search for one term reaches equivalent terms at other institutions.</li>
     <li><strong>Generalize what remains.</strong> Exact birth date becomes a developmental stage and
-      an age band. Exact study dates are shifted consistently, preserving intervals while destroying
-      the calendar.</li>
+      an age band. The study date is dropped entirely: this corpus holds one study per patient, so
+      there is no interval to preserve, and a date that never crosses cannot re-identify anyone.</li>
     <li><strong>Stamp provenance.</strong> Every field records where it came from.</li>
   </ol>
 
