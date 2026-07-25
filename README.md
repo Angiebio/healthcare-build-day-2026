@@ -117,8 +117,9 @@ contrib/   team member contributions
 ```
 
 **Design principle:** everything that must be *correct* is a deterministic function in `scripts/`.
-The language model parses natural language into a **validated** query AST and narrates results — it
-never decides what is released, and never invents a number.
+Natural-language input is **validated**, not interpreted, and no model participates in deciding what
+is released. Any model in this system operates strictly downstream of every disclosure decision, on
+aggregate numbers it did not compute, and cannot alter what was disclosed.
 
 ## Team
 
