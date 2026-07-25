@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>For computational researchers · Lantern</title>
+  <link rel="stylesheet" href="lantern.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="/">Lantern</a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="/">Search console</a>
+    <a href="about.html">About</a>
+    <span class="menu" data-active><button type="button" aria-haspopup="true">Who it serves</button>
+      <ul>
+        <li><a href="for-researchers.html">For computational researchers<small>Queryable measurements, cohort discovery</small></a></li>
+        <li><a href="for-physicians.html">For physicians<small>Comparable cases, routed requests</small></a></li>
+        <li><a href="for-patients.html">For patients and families<small>Plain language, and your own images</small></a></li>
+      </ul>
+    </span>
+    <a href="science.html">Scientific choices</a>
+    <a href="privacy.html">Privacy</a>
+  </nav>
+</header>
+
+<main>
+<article class="prose">
+
+  <h1>For computational researchers</h1>
+  <p class="standfirst">You are the primary user. The question this answers is the one that currently
+  costs you months: does a cohort exist that fits my method, and is it worth pursuing?</p>
+
+  <h2>The problem we are actually solving for you</h2>
+
+  <p>Finding out whether suitable data exists should not require a data use agreement. Today it often
+  does. You approach institutions one at a time, describe a study you cannot yet scope, and wait for
+  approvals that tell you only whether you may look, not whether looking is worthwhile.</p>
+
+  <p>Lantern separates the two. Discovery is open and governed. Access is petitioned and audited. You
+  can size a cohort, inspect its distribution, and decide against it entirely without anyone signing
+  anything.</p>
+
+  <h2>The search axis that does not exist elsewhere</h2>
+
+  <p>Clinical measurements are recorded in prose. A radiologist writes that the lateral ventricular
+  atrial width measures 12.4 mm, and that number becomes unreachable, because search engines index
+  words rather than quantities.</p>
+
+  <p>We compile those values into typed facts at the hospital, so you can query them directly.</p>
+
+  <table class="data-table">
+    <thead><tr><th>You can now ask</th><th>Which today requires</th></tr></thead>
+    <tbody>
+      <tr><td>Fetal atrial width above 10 mm</td><td>Reading every report by hand</td></tr>
+      <tr><td>Ejection fraction below 40 percent</td><td>A site-by-site chart review</td></tr>
+      <tr><td>Severe cases only, above 15 mm</td><td>A query no interface can express</td></tr>
+    </tbody>
+  </table>
+
+  <p>Thresholds are ordinary comparisons, so stratification works the way you would expect. Mild,
+  moderate, and severe are a range query rather than three separate keyword hunts.</p>
+
+  <h2>Every number carries its evidence</h2>
+
+  <p>A measurement arrives with three things attached: the confidence our extractor assigned, the
+  provenance of the fact, and <strong>the exact sentence it was taken from</strong>. You do not have
+  to trust the parser. You can read the phrase and decide in about two seconds.</p>
+
+  <p>This matters more than it sounds. An extracted value with no traceable source is not a scientific
+  observation, it is a rumour with a decimal point. Ours are auditable individually, which is what
+  makes the axis usable in work you intend to publish.</p>
+
+  <div class="callout">
+    A machine-derived value is always visibly machine-derived. It never appears in the same register
+    as a documented diagnosis.
+  </div>
+
+  <h2>What the corpus cannot support, stated plainly</h2>
+
+  <p>Every passport carries a field naming its own limits. For this dataset that includes acquisition
+  parameters and pixel data, because the supplied corpus contains neither. There is no field strength,
+  no slice geometry, no reconstruction kernel, and no image.</p>
+
+  <p>So we index no image-derived features and claim no similarity search. If your method needs voxel
+  spacing or diffusion directions, this index will tell you immediately that it cannot help, which is
+  worth more to you than a hopeful maybe.</p>
+
+  <h2>When a cohort is too small to disclose</h2>
+
+  <p>Rare presentations are where the science is and where the risk is. When a query matches fewer
+  studies than the disclosure threshold, that hospital returns a count band and a petition route
+  rather than records.</p>
+
+  <p>The threshold is returned in the response, so you always know the rule being applied to you.
+  Suppression happens per institution, so one hospital withholding does not prevent the others from
+  answering.</p>
+
+  <h2>Getting the underlying data</h2>
+
+  <p>Petition through the interface with your institution, IRB reference, and stated purpose. The
+  request routes to the hospital that owns the studies and they decide. Approval is recorded in an
+  append-only audit trail alongside the request that prompted it.</p>
+
+  <p>We never hold source images, so we are never the party deciding whether you receive them. That is
+  deliberate. The institution carrying the obligation is the institution making the call.</p>
+
+</article>
+</main>
+
+<footer>
+  Lantern · built 25 July 2026 · MIT licensed · synthetic data only
+</footer>
+
+</body>
+</html>

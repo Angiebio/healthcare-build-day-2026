@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>For physicians · Lantern</title>
+  <link rel="stylesheet" href="lantern.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="/">Lantern</a>
+  <span class="tagline">Open discovery. Governed pixels.</span>
+  <nav class="nav">
+    <a href="/">Search console</a>
+    <a href="about.html">About</a>
+    <span class="menu" data-active><button type="button" aria-haspopup="true">Who it serves</button>
+      <ul>
+        <li><a href="for-researchers.html">For computational researchers<small>Queryable measurements, cohort discovery</small></a></li>
+        <li><a href="for-physicians.html">For physicians<small>Comparable cases, routed requests</small></a></li>
+        <li><a href="for-patients.html">For patients and families<small>Plain language, and your own images</small></a></li>
+      </ul>
+    </span>
+    <a href="science.html">Scientific choices</a>
+    <a href="privacy.html">Privacy</a>
+  </nav>
+</header>
+
+<main>
+<article class="prose">
+
+  <h1>For physicians</h1>
+  <p class="standfirst">You are looking at an uncommon presentation and want to know whether anyone
+  else has seen one like it. That question is currently answered by who you happen to know.</p>
+
+  <h2>Finding comparable cases across institutions</h2>
+
+  <p>Rare findings are rare locally and less rare nationally. A colleague three hospitals away may
+  have managed four of them. Today the way you discover that is a conference corridor, a mailing list,
+  or luck.</p>
+
+  <p>Lantern lets you search the participating network by finding, anatomy, developmental stage, and
+  by the measured values themselves. If comparable studies exist, you will see where, and how many,
+  without anyone disclosing a patient.</p>
+
+  <h2>The line we hold, and why you should want us to hold it</h2>
+
+  <p>What this system returns is <strong>research discovery</strong>. It is not a second opinion, not
+  a diagnostic aid, and not clinical evidence about your patient.</p>
+
+  <p>That distinction is enforced in the interface rather than left to your judgment under time
+  pressure. Values extracted from reports are labelled as extracted, carry a confidence, and display
+  the sentence they came from. Nothing here is presented as a validated clinical finding, because
+  nothing here has been validated as one.</p>
+
+  <div class="callout">
+    A tool that blurs research similarity into clinical evidence is worse than no tool, because it
+    produces confident answers in exactly the situations where confidence is unearned.
+  </div>
+
+  <h2>What you see that a researcher does not</h2>
+
+  <p>Clinician access sits one tier above researcher access. In practice that means narrower
+  developmental banding where it is clinically meaningful, and a direct route to the institution
+  holding a study rather than a generic petition queue.</p>
+
+  <p>Access is decided by role on the server. Nothing in the browser can grant you more than your role
+  permits, which also means nothing in the browser can be manipulated into granting it.</p>
+
+  <h2>Requesting the underlying study</h2>
+
+  <p>If you need more than a passport, you submit a request that names your institution, your purpose,
+  and, where applicable, your treatment relationship. It routes to the hospital that owns the study,
+  and a person there decides.</p>
+
+  <p>There is no automatic cross-institution transfer of source data, for treatment purposes or any
+  other. Every request and every decision is written to an append-only audit trail. If you are ever
+  asked to account for how you obtained a study, the record exists and it is not editable, including
+  by us.</p>
+
+  <h2>Why the counts sometimes refuse to sharpen</h2>
+
+  <p>When a query narrows to a very small group, the system returns a band rather than an exact
+  number, and withholds the records. This will occasionally frustrate you, and it is working
+  correctly.</p>
+
+  <p>In a rare paediatric presentation, an exact count can identify a child. The threshold that
+  triggers this is shown to you in the response rather than hidden, and the petition route stays open.
+  You are not blocked from the data. You are asked to request it from the people accountable for it.</p>
+
+</article>
+</main>
+
+<footer>
+  Lantern · built 25 July 2026 · MIT licensed · synthetic data only
+</footer>
+
+</body>
+</html>

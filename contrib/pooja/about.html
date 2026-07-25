@@ -12,11 +12,17 @@
   <a class="wordmark" href="/">Lantern</a>
   <span class="tagline">Open discovery. Governed pixels.</span>
   <nav class="nav">
-    <a href="/">Search</a>
+    <a href="/">Search console</a>
     <a href="about.html" aria-current="page">About</a>
-    <a href="how-it-works.html">How it works</a>
+    <span class="menu"><button type="button" aria-haspopup="true">Who it serves</button>
+      <ul>
+        <li><a href="for-researchers.html">For computational researchers<small>Queryable measurements, cohort discovery</small></a></li>
+        <li><a href="for-physicians.html">For physicians<small>Comparable cases, routed requests</small></a></li>
+        <li><a href="for-patients.html">For patients and families<small>Plain language, and your own images</small></a></li>
+      </ul>
+    </span>
     <a href="science.html">Scientific choices</a>
-    <a href="privacy.html">Privacy &amp; compliance</a>
+    <a href="privacy.html">Privacy</a>
   </nav>
 </header>
 
@@ -53,6 +59,14 @@
 
   <p>Each hospital compiles its own studies into a de-identified <strong>Study Passport</strong>, a structured description of what a scan contains and what it can support, generated
   <em>inside the hospital's own boundary</em>. Only the passport travels. The images never do.</p>
+
+
+  <figure class="diagram">
+    <img src="architecture.svg" alt="Raw records are compiled inside the hospital into de-identified Study Passports. Only passports cross to the Lantern broker, which federates search, applies disclosure policy, and routes petitions back to the owning hospital.">
+    <figcaption>Compilation happens inside the hospital boundary. Only the passport crosses. The
+    broker has no route, import, or address that reaches a raw record, and a test proves it rather
+    than a document asserting it.</figcaption>
+  </figure>
 
   <p>A researcher searches across the network, sees what exists and where, and evaluates whether the
   cohort suits their work. When they need the underlying data, they submit a petition that routes to
@@ -91,19 +105,30 @@
     More useful, less exposed, because the compilation happens before anything leaves.
   </div>
 
-  <h2>Who it serves</h2>
+<h2>One index, three populations</h2>
 
-  <p><strong>Computational researchers</strong> get quantitative cohort discovery, filter by measured
-  values, and see plainly what is missing before committing to a study. Every passport carries a field
-  listing what this data cannot support, which for the supplied corpus includes acquisition
-  parameters and pixel data.</p>
+  <p>The same compiled passport serves three very different questions, and the interface answers each
+  one differently. Redaction is decided on the server by role, so what a person sees is determined by
+  who they are rather than by what their browser asks for.</p>
 
-  <p><strong>Clinicians</strong> get to find comparable cases across institutions, with research
-  similarity kept clearly separate from clinical evidence.</p>
+  <figure class="diagram">
+    <img src="audiences.svg" alt="The same Study Passport is served at three tiers: patients see plain-language conditions and broad age bands, computational researchers see queryable measurements with provenance, physicians see comparable cases and a route to the data owner. Full source data is served to nobody.">
+    <figcaption>Full source data is served to nobody. Every request for it routes to the hospital that
+    owns the study and writes an append-only audit entry.</figcaption>
+  </figure>
 
-  <p><strong>Patients and families</strong> get a plain-language view of whether their condition is
-  represented in research, and a distinct, properly authorized path to their own images, which is a
-  right of access, not a research disclosure, and is treated as such.</p>
+  <p><a href="for-researchers.html"><strong>Computational researchers</strong></a> get the axis that
+  does not exist elsewhere. They can filter by measured value rather than by keyword, see the sentence
+  each number came from, and read a field on every passport naming what the data cannot support.</p>
+
+  <p><a href="for-physicians.html"><strong>Physicians</strong></a> get to find comparable cases across
+  institutions, with research similarity held firmly apart from clinical evidence and labelled as
+  such. Requests for a study route to the owning hospital, and no source data moves automatically.</p>
+
+  <p><a href="for-patients.html"><strong>Patients and families</strong></a> get plain language, an
+  honest answer about whether their condition is being studied, and counts that deliberately stop
+  being precise when precision would identify a child. Access to their own images is a separate,
+  authenticated path through the hospital, because a right of access is not a research disclosure.</p>
 
   <h2>Who built it</h2>
 

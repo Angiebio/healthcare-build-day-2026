@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 520" role="img"
+     aria-labelledby="t d" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="t">One index, three populations, three different answers</title>
+  <desc id="d">The same compiled Study Passport is served differently to patients, computational
+    researchers, and physicians. Redaction is decided server-side by role, so each population sees the
+    representation appropriate to it and no more. Full source data is served to nobody.</desc>
+
+  <style>
+    .ink{fill:#16181d}.soft{fill:#4a5058}.faint{fill:#767d87}
+    .panel{fill:#ffffff;stroke:#dcdcd6}.rule{stroke:#dcdcd6;fill:none}
+    .accent{fill:#4a0873}.accentline{stroke:#4a0873;fill:none}
+    .sig{fill:#5bb545}.stop{fill:#96271d}
+    .h{font-size:14px;font-weight:600}
+    .sub{font-size:11px}
+    .lbl{font-size:11.5px}
+    .tiny{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase}
+    .mono{font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:10px}
+    @media (prefers-color-scheme: dark){
+      .ink{fill:#e8e8e4}.soft{fill:#b3b7bd}.faint{fill:#868c94}
+      .panel{fill:#1c1f24;stroke:#2e333a}.rule{stroke:#2e333a}
+      .accent{fill:#c9a5e0}.accentline{stroke:#c9a5e0}
+    }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" class="accent"/>
+    </marker>
+  </defs>
+
+  <!-- ONE SOURCE -->
+  <text x="440" y="24" text-anchor="middle" class="tiny faint">One compiled record, held by the hospital that made it</text>
+  <rect x="290" y="36" width="300" height="62" rx="4" class="panel" stroke-width="1.5"/>
+  <text x="440" y="58" text-anchor="middle" class="h accent">Study Passport</text>
+  <text x="440" y="76" text-anchor="middle" class="mono soft">atrial_width 14.1 mm · left · conf 0.96 · GA 24w</text>
+  <text x="440" y="90" text-anchor="middle" class="lbl faint">de-identified at the node · no report · no pixels</text>
+
+  <!-- fan out -->
+  <path d="M 440 100 L 440 118 M 440 118 L 152 118 L 152 138" class="accentline" stroke-width="1.4" marker-end="url(#a)"/>
+  <path d="M 440 118 L 440 138" class="accentline" stroke-width="1.4" marker-end="url(#a)"/>
+  <path d="M 440 118 L 728 118 L 728 138" class="accentline" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <text x="440" y="132" text-anchor="middle" class="tiny faint">redaction decided server-side, never by the client</text>
+
+  <!-- ============ PATIENT ============ -->
+  <rect x="24" y="144" width="256" height="316" rx="4" class="panel" stroke-width="1.5"/>
+  <text x="40" y="168" class="h ink">Patients &amp; families</text>
+  <text x="40" y="185" class="sub faint">“Is my child’s condition being studied?”</text>
+  <rect x="40" y="196" width="52" height="17" rx="2" class="rule"/>
+  <text x="49" y="208" class="tiny accent">Tier L0</text>
+
+  <text x="40" y="234" class="tiny faint">They see</text>
+  <text x="40" y="252" class="lbl ink">Plain-language condition names</text>
+  <text x="40" y="270" class="lbl ink">Whether a cohort exists at all</text>
+  <text x="40" y="288" class="lbl ink">A broad age band</text>
+  <text x="40" y="306" class="lbl ink">How research uses this data</text>
+
+  <line x1="40" y1="322" x2="264" y2="322" class="rule"/>
+  <text x="40" y="342" class="tiny faint">They never see</text>
+  <text x="40" y="360" class="lbl soft">Counts small enough to identify anyone</text>
+  <text x="40" y="378" class="lbl soft">Any individual record</text>
+
+  <line x1="40" y1="394" x2="264" y2="394" class="rule"/>
+  <text x="40" y="414" class="lbl accent">Their own images are a separate path</text>
+  <text x="40" y="431" class="sub faint">A right of access, authenticated through the</text>
+  <text x="40" y="446" class="sub faint">hospital. Not a research disclosure.</text>
+
+  <!-- ============ RESEARCHER ============ -->
+  <rect x="296" y="144" width="288" height="316" rx="4" class="panel" stroke-width="2" stroke="#4a0873"/>
+  <text x="312" y="168" class="h ink">Computational researchers</text>
+  <text x="312" y="185" class="sub faint">“Does a cohort exist that fits my method?”</text>
+  <rect x="312" y="196" width="52" height="17" rx="2" class="rule"/>
+  <text x="321" y="208" class="tiny accent">Tier L1</text>
+  <text x="374" y="208" class="tiny sig">primary user</text>
+
+  <text x="312" y="234" class="tiny faint">They see</text>
+  <text x="312" y="252" class="lbl ink">Measured values, queryable by threshold</text>
+  <text x="312" y="270" class="lbl ink">The sentence each number came from</text>
+  <text x="312" y="288" class="lbl ink">Confidence and provenance per fact</text>
+  <text x="312" y="306" class="lbl ink">Cohort counts across every hospital</text>
+  <text x="312" y="324" class="lbl ink">What this data cannot support</text>
+
+  <line x1="312" y1="340" x2="568" y2="340" class="rule"/>
+  <text x="312" y="360" class="tiny faint">The axis that exists nowhere else</text>
+  <rect x="312" y="368" width="256" height="26" rx="3" class="rule"/>
+  <text x="322" y="385" class="mono accent">atrial_width &gt; 10 mm  ·  EF &lt; 40%</text>
+
+  <text x="312" y="416" class="lbl soft">Below the disclosure threshold, records are</text>
+  <text x="312" y="432" class="lbl soft">withheld and a petition route is returned</text>
+  <text x="312" y="450" class="lbl stop">instead. Per hospital, never network-wide.</text>
+
+  <!-- ============ PHYSICIAN ============ -->
+  <rect x="600" y="144" width="256" height="316" rx="4" class="panel" stroke-width="1.5"/>
+  <text x="616" y="168" class="h ink">Physicians</text>
+  <text x="616" y="185" class="sub faint">“Has anyone seen a case like mine?”</text>
+  <rect x="616" y="196" width="52" height="17" rx="2" class="rule"/>
+  <text x="625" y="208" class="tiny accent">Tier L2</text>
+
+  <text x="616" y="234" class="tiny faint">They see</text>
+  <text x="616" y="252" class="lbl ink">Everything a researcher sees</text>
+  <text x="616" y="270" class="lbl ink">Comparable cases across institutions</text>
+  <text x="616" y="288" class="lbl ink">A direct route to the owning hospital</text>
+
+  <line x1="616" y1="304" x2="840" y2="304" class="rule"/>
+  <text x="616" y="324" class="tiny faint">Held firmly apart</text>
+  <text x="616" y="342" class="lbl soft">Research similarity is labelled as such</text>
+  <text x="616" y="360" class="lbl soft">and never presented as clinical evidence.</text>
+  <text x="616" y="378" class="lbl soft">A machine-derived value never wears a</text>
+  <text x="616" y="396" class="lbl soft">documented finding’s clothes.</text>
+
+  <line x1="616" y1="412" x2="840" y2="412" class="rule"/>
+  <text x="616" y="432" class="lbl accent">Treatment-purpose requests route to</text>
+  <text x="616" y="449" class="lbl accent">the data owner. No automatic transfer.</text>
+
+  <!-- FLOOR -->
+  <rect x="24" y="474" width="832" height="34" rx="4" class="panel"/>
+  <text x="440" y="496" text-anchor="middle" class="lbl ink">
+    Full source data is served to <tspan class="stop" font-weight="600">nobody</tspan>. Every petition routes to the owning hospital and writes an append-only audit entry.
+  </text>
+</svg>

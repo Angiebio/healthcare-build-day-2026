@@ -234,3 +234,66 @@ footer {
   main { padding: 1.5rem 1rem 3rem; }
   .prose h1 { font-size: 1.6rem; }
 }
+
+/* --- nav dropdown: the audience pages live under one menu so the masthead
+   stays calm. Hover on pointer devices, click-to-open via :focus-within for
+   keyboards, because a regulator's browser is often a keyboard. ------------- */
+.nav .menu { position: relative; }
+.nav .menu > button {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 0 0 2px;
+  cursor: pointer;
+}
+.nav .menu > button::after { content: " ▾"; font-size: 0.7em; color: var(--ink-faint); }
+.nav .menu:hover > button, .nav .menu:focus-within > button { color: var(--ink); }
+.nav .menu[data-active] > button { color: var(--accent); border-bottom-color: var(--accent); }
+
+.nav .menu ul {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 15rem;
+  margin: 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.10);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 40;
+}
+.nav .menu:hover ul, .nav .menu:focus-within ul { opacity: 1; visibility: visible; }
+.nav .menu li a {
+  display: block;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.nav .menu li a small { display: block; color: var(--ink-faint); font-size: 0.75rem; }
+.nav .menu li a:hover { background: var(--accent-soft); color: var(--accent); }
+
+/* --- figures: diagrams are content, not decoration -------------------------- */
+figure.diagram { margin: 2rem 0; }
+figure.diagram img, figure.diagram svg { width: 100%; height: auto; display: block; }
+figure.diagram figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  border-left: 2px solid var(--rule);
+  padding-left: 0.7rem;
+}
+
+@media (max-width: 640px) {
+  .nav .menu ul { position: static; transform: none; opacity: 1; visibility: visible;
+                  box-shadow: none; border: 0; padding-left: 0.8rem; min-width: 0; }
+}
